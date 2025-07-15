@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Autoavaliação de Competências - Método Faça Bem</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: #f4f7f9;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 900px;
+      margin: 20px auto;
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+    .header img {
+      max-width: 180px;
+      margin-bottom: 15px;
+    }
+    .header h1 {
+      font-size: 2em;
+      color: #2c3e50;
+      margin: 0;
+    }
+    
+    /* Estilos para as opções de experiência */
+    .experiencia-section {
+      margin-bottom: 40px;
+    }
+    .experiencia-section h2 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 30px;
+      font-size: 1.8em;
+    }
+    .planos {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 30px;
+      gap: 20px;
+    }
+    .plano {
+      background-color: #f8f9fa;
+      padding: 25px;
+      border-radius: 12px;
+      width: 45%;
+      text-align: center;
+      border: 2px solid #e9ecef;
+      transition: all 0.3s ease;
+    }
+    .plano:hover {
+      border-color: #007bff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,123,255,0.15);
+    }
+    .plano h3 {
+      margin-top: 0;
+      color: #495057;
+      font-size: 1.3em;
+    }
+    .plano ul {
+      list-style: none;
+      padding: 0;
+      margin: 20px 0;
+      text-align: left;
+    }
+    .plano ul li {
+      margin: 10px 0;
+      padding: 5px 0;
+      color: #6c757d;
+    }
+    .plano button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s;
+      width: 100%;
+    }
+    .plano button:hover {
+      background-color: #218838;
+    }
+    .plano.premium button {
+      background-color: #007bff;
+    }
+    .plano.premium button:hover {
+      background-color: #0056b3;
+    }
+    
+    /* Estilos das questões (da versão funcionando) */
+    .introducao {
+      background-color: #e3f2fd;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      border-left: 5px solid #2196f3;
+    }
+    .introducao h2 {
+      color: #1976d2;
+      margin-top: 0;
+    }
+    .introducao ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    .introducao li {
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    .introducao .emoji { font-size: 1.1em; margin-right: 8px; }
+    
+    .escala-info {
+      background-color: #fff9c4;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      border-left: 5px solid #ffeb3b;
+    }
+    .escala-info h3 {
+      color: #f57f17;
+      margin-top: 0;
+    }
+    .escala-info p {
+      margin-bottom: 5px;
+    }
+    .escala-info strong {
+      color: #2c3e50;
+    }
+    
+    .form-group {
+      margin-bottom: 25px;
+    }
+    .form-group label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: #555;
+    }
+    .form-group input[type="text"],
+    .form-group input[type="email"],
+    .form-group input[type="tel"] {
+      width: calc(100% - 22px);
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1em;
+      transition: border-color 0.3s;
+    }
+    .form-group input:focus {
+      border-color: #2196f3;
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+    }
+    
+    .competencia-bloco {
+      margin-bottom: 40px;
+      padding: 25px;
+      background-color: #f9f9f9;
+      border-radius: 8px;
+      border: 1px solid #eee;
+    }
+    .competencia-bloco h3 {
+      font-size: 1.5em;
+      color: #1976d2;
+      margin-top: 0;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+    }
+    .pergunta {
+      margin-bottom: 25px;
+      padding: 15px;
+      background-color: #fff;
+      border-radius: 6px;
+      border-left: 4px solid #b0bec5;
+    }
+    .pergunta p {
+      margin: 0 0 15px 0;
+      font-weight: 500;
+      color: #455a64;
+    }
+    .likert-escala {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .likert-opcao {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 6px;
+      transition: background-color 0.2s;
+      min-width: 120px;
+    }
+    .likert-opcao:hover {
+      background-color: #eef6fc;
+    }
+    .likert-opcao input[type="radio"] {
+      margin-bottom: 8px;
+      transform: scale(1.3);
+    }
+    .likert-opcao label {
+      font-size: 0.9em;
+      font-weight: normal;
+      color: #555;
+      margin: 0;
+    }
+    
+    .btn-submit {
+      display: block;
+      width: 100%;
+      padding: 15px;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.2em;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      text-align: center;
+    }
+    .btn-submit:hover {
+      background-color: #388e3c;
+    }
+    
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(255, 255, 255, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      font-size: 1.5em;
+      color: #333;
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.3s, visibility 0.3s;
+    }
+    .loading-overlay.active {
+      visibility: visible;
+      opacity: 1;
+    }
+    
+    /* Responsividade */
+    @media (max-width: 768px) {
+      .planos {
+        flex-direction: column;
+      }
+      .plano {
+        width: 100%;
+        margin-bottom: 20px;
+      }
+      .likert-escala {
+        flex-direction: column;
+        gap: 15px;
+      }
+      .likert-opcao {
+        min-width: 100%;
+        flex-direction: row;
+        justify-content: flex-start;
+      }
+      .likert-opcao input[type="radio"] {
+        margin-right: 10px;
+        margin-bottom: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo Método Faça Bem">
+      <h1>Autoavaliação de Competências</h1>
+    </div>
+
+    <div class="experiencia-section" id="escolhaExperiencia">
+      <h2>🎯 Escolha Sua Experiência</h2>
+      <div class="planos">
+        <div class="plano">
+          <h3>🆓 VERSÃO GRATUITA</h3>
+          <ul>
+            <li>✅ Avaliação completa (50 questões)</li>
+            <li>✅ Pontuação geral e por competência</li>
+            <li>✅ Ranking das competências</li>
+            <li>✅ Preview do plano de desenvolvimento</li>
+          </ul>
+          <button onclick="iniciarAvaliacao('gratuita')">Começar Grátis</button>
+        </div>
+        <div class="plano premium">
+          <h3>⭐ VERSÃO PREMIUM</h3>
+          <ul>
+            <li>✅ Tudo da versão gratuita</li>
+            <li>✅ Plano de desenvolvimento completo</li>
+            <li>✅ Ações específicas para cada competência</li>
+            <li>✅ Relatório em PDF profissional</li>
+            <li>✅ Suporte prioritário</li>
+          </ul>
+          <button onclick="iniciarAvaliacao('premium')">Adquirir Premium - R$ 29,90</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="avaliacaoSection" style="display: none;">
+      <div class="introducao">
+        <h2>🎯 Bem-vindo(a) à sua jornada de autoconhecimento e desenvolvimento!</h2>
+        <p>Esta avaliação foi desenvolvida para ajudá-lo(a) a identificar seus pontos fortes e áreas de melhoria em cinco competências essenciais para o sucesso pessoal e profissional:</p>
+        <ul>
+          <li><span class="emoji">🟠</span> <strong>Comunicação:</strong> Habilidades de escuta ativa, empatia e expressão clara</li>
+          <li><span class="emoji">🟡</span> <strong>Organização:</strong> Gestão de tempo, prioridades e sistemas pessoais</li>
+          <li><span class="emoji">🔵</span> <strong>Proatividade:</strong> Iniciativa, responsabilidade e foco em resultados</li>
+          <li><span class="emoji">🟣</span> <strong>Pensamento Crítico:</strong> Análise, reflexão e tomada de decisões conscientes</li>
+          <li><span class="emoji">🟢</span> <strong>Produtividade:</strong> Eficiência, foco e gestão de energia</li>
+        </ul>
+        <p><em>Tempo estimado: 10-15 minutos | Resultado: Relatório personalizado com plano de desenvolvimento</em></p>
+      </div>
+
+      <div class="escala-info">
+        <h3>📊 Como responder:</h3>
+        <p>Para cada afirmação, escolha a opção que melhor representa sua realidade atual:</p>
+        <p><strong>1 = Discordo Totalmente</strong> | <strong>2 = Discordo</strong> | <strong>3 = Neutro</strong> | <strong>4 = Concordo</strong> | <strong>5 = Concordo Totalmente</strong></p>
+        <p><em>Seja honesto(a) consigo mesmo(a). Não há respostas certas ou erradas!</em></p>
+      </div>
+
+      <form id="avaliacaoForm">
+        <input type="hidden" id="tipoExperiencia" name="tipo_experiencia" value="">
+        
+        <div class="form-group">
+          <label for="nome_completo">Nome completo:</label>
+          <input type="text" id="nome_completo" name="nome_completo" required>
+        </div>
+        <div class="form-group">
+          <label for="email">E-mail (para receber o relatório):</label>
+          <input type="email" id="email" name="email" required>
+        </div>
+        <div class="form-group">
+          <label for="celular">Número do celular:</label>
+          <input type="tel" id="celular" name="celular" placeholder="(11) 99999-9999" required>
+        </div>
+
+        {% set competencias = [
+          {
+            "titulo": "Comunicação", 
+            "emoji": "🟠",
+            "chave": "c1",
+            "perguntas": [
+              "Ao conversar, me esforço para entender os sentimentos e necessidades por trás das palavras do outro.",
+              "Evito julgamentos ou críticas ao expressar o que penso.",
+              "Faço perguntas com genuína curiosidade em vez de assumir intenções alheias.",
+              "Adapto minha linguagem e estilo de comunicação ao público com quem estou interagindo.",
+              "Consigo transmitir ideias complexas de forma clara e concisa.",
+              "Peço feedback sobre minha comunicação e o utilizo para melhorar.",
+              "Mantenho contato visual adequado e linguagem corporal aberta durante conversas.",
+              "Sou capaz de mediar conflitos e facilitar o entendimento entre partes divergentes.",
+              "Comunico minhas expectativas de forma assertiva e respeitosa.",
+              "Celebro os sucessos de comunicação da equipe e reconheço boas práticas."
+            ]
+          },
+          {
+            "titulo": "Organização", 
+            "emoji": "🟡",
+            "chave": "c2",
+            "perguntas": [
+              "Planejo meu dia e semana com antecedência, definindo prioridades claras.",
+              "Utilizo um sistema (agenda, app, lista) para gerenciar minhas tarefas e compromissos.",
+              "Mantenho meu espaço de trabalho (físico e digital) limpo e organizado.",
+              "Consigo encontrar informações e arquivos rapidamente quando preciso.",
+              "Divido projetos grandes em tarefas menores e gerenciáveis.",
+              "Estabeleço prazos realistas e me esforço para cumpri-los.",
+              "Reviso minhas prioridades regularmente e as ajusto conforme necessário.",
+              "Minimizo distrações e interrupções para manter o foco nas tarefas importantes.",
+              "Preparo-me adequadamente para reuniões e compromissos.",
+              "Delego tarefas quando apropriado e confio na capacidade dos outros."
+            ]
+          },
+          {
+            "titulo": "Proatividade", 
+            "emoji": "🔵",
+            "chave": "c3",
+            "perguntas": [
+              "Identifico problemas ou oportunidades antes que se tornem urgentes.",
+              "Tomo a iniciativa de buscar soluções em vez de esperar que outros o façam.",
+              "Assumo responsabilidade por minhas ações e resultados, mesmo quando são negativos.",
+              "Busco constantemente maneiras de melhorar processos e resultados.",
+              "Ofereço ajuda aos colegas sem que precisem pedir.",
+              "Mantenho uma atitude positiva e resiliente diante de desafios e contratempos.",
+              "Invisto tempo em meu autodesenvolvimento e aprendizado contínuo.",
+              "Adapto-me rapidamente a mudanças e novas situações.",
+              "Transformo ideias em ações concretas e acompanho sua implementação.",
+              "Antevejo necessidades futuras e me preparo para elas."
+            ]
+          },
+          {
+            "titulo": "Pensamento Crítico", 
+            "emoji": "🟣",
+            "chave": "c4",
+            "perguntas": [
+              "Questiono padrões de pensamento automáticos e reflito antes de reagir.",
+              "Busco evidências e dados concretos antes de aceitar uma afirmação como verdadeira.",
+              "Reconheço meus próprios vieses e procuro ativamente maneiras de superá-los.",
+              "Sou capaz de mudar de opinião quando apresentados argumentos e fatos convincentes.",
+              "Analiso as causas profundas dos problemas em vez de lidar apenas com os sintomas superficiais.",
+              "Diferencio intuições rápidas de raciocínios bem fundamentados e ponderados.",
+              "Considero diversas perspectivas e pontos de vista antes de tomar decisões importantes.",
+              "Faço pausas estratégicas para pensar e refletir em vez de reagir por impulso.",
+              "Avalio os riscos e benefícios de diferentes opções antes de tomar uma decisão.",
+              "Aprendo com erros passados, meus e dos outros, transformando-os em lições práticas."
+            ]
+          },
+          {
+            "titulo": "Produtividade", 
+            "emoji": "🟢",
+            "chave": "c5",
+            "perguntas": [
+              "Concentro-me em uma tarefa por vez, evitando multitarefas excessivas.",
+              "Identifico e elimino atividades que desperdiçam meu tempo e energia.",
+              "Utilizo técnicas (como Pomodoro, blocos de tempo) para gerenciar meu foco.",
+              "Faço pausas regulares para recarregar minha energia e manter a produtividade.",
+              "Estabeleço metas claras e mensuráveis para meus projetos e atividades.",
+              "Uso ferramentas e tecnologias que aumentam minha eficiência no trabalho.",
+              "Mantenho um equilíbrio saudável entre vida pessoal e profissional.",
+              "Avalio meu desempenho com regularidade e faço melhorias.",
+              "Equilibro produtividade com autocuidado para manter consistência.",
+              "Celebro pequenas conquistas como forma de manter a motivação."
+            ]
+          }
+        ] %}
+
+        {% for comp in competencias %}
+        <div class="competencia-bloco">
+          <h3><span class="emoji">{{ comp.emoji }}</span> {{ comp.titulo }}</h3>
+          {% for pergunta in comp.perguntas %}
+          <div class="pergunta">
+            <p><strong>{{ loop.index }}.</strong> {{ pergunta }}</p>
+            <div class="likert-escala" id="{{ comp.chave }}_q{{ loop.index }}">
+              <div class="likert-opcao">
+                <input type="radio" id="{{ comp.chave }}_q{{ loop.index }}_dt" name="{{ comp.chave }}_q{{ loop.index }}" value="1" required>
+                <label for="{{ comp.chave }}_q{{ loop.index }}_dt">Discordo<br>Totalmente</label>
+              </div>
+              <div class="likert-opcao">
+                <input type="radio" id="{{ comp.chave }}_q{{ loop.index }}_d" name="{{ comp.chave }}_q{{ loop.index }}" value="2">
+                <label for="{{ comp.chave }}_q{{ loop.index }}_d">Discordo</label>
+              </div>
+              <div class="likert-opcao">
+                <input type="radio" id="{{ comp.chave }}_q{{ loop.index }}_n" name="{{ comp.chave }}_q{{ loop.index }}" value="3">
+                <label for="{{ comp.chave }}_q{{ loop.index }}_n">Neutro</label>
+              </div>
+              <div class="likert-opcao">
+                <input type="radio" id="{{ comp.chave }}_q{{ loop.index }}_c" name="{{ comp.chave }}_q{{ loop.index }}" value="4">
+                <label for="{{ comp.chave }}_q{{ loop.index }}_c">Concordo</label>
+              </div>
+              <div class="likert-opcao">
+                <input type="radio" id="{{ comp.chave }}_q{{ loop.index }}_ct" name="{{ comp.chave }}_q{{ loop.index }}" value="5">
+                <label for="{{ comp.chave }}_q{{ loop.index }}_ct">Concordo<br>Totalmente</label>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endfor %}
+
+        <div id="form-messages"></div>
+
+        <button type="submit" class="btn-submit">🚀 Enviar Avaliação e Receber Relatório Personalizado</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="loading-overlay" id="loadingOverlay">
+    <span>Gerando seu relatório... Por favor, aguarde.</span>
+  </div>
+
+  <script>
+    function iniciarAvaliacao(tipo) {
+      document.getElementById('tipoExperiencia').value = tipo;
+      document.getElementById('avaliacaoSection').style.display = 'block';
+      document.getElementById('escolhaExperiencia').style.display = 'none';
+      
+      // Scroll para o formulário
+      document.getElementById('avaliacaoSection').scrollIntoView({ 
+        behavior: 'smooth' 
+      });
+    }
+
+    document.getElementById("avaliacaoForm").addEventListener("submit", async function(event) {
+      event.preventDefault();
+      
+      const loadingOverlay = document.getElementById("loadingOverlay");
+      loadingOverlay.classList.add("active");
+      
+      const formData = new FormData(event.target);
+      
+      try {
+        const response = await fetch('/submit_avaliacao', {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          if (result.html_content) {
+            // Exibir o relatório HTML
+            document.body.innerHTML = result.html_content;
+          } else if (result.message) {
+            // Exibir mensagem de sucesso
+            document.getElementById("form-messages").innerHTML = 
+              '<div style="color: green; text-align: center; padding: 15px;">' + result.message + '</div>';
+          }
+        } else {
+          const errorResult = await response.json();
+          throw new Error(errorResult.error || 'Erro na resposta do servidor');
+        }
+      } catch (error) {
+        console.error('Erro:', error);
+        document.getElementById("form-messages").innerHTML = 
+          '<div style="color: red; text-align: center; padding: 15px;">Erro ao processar avaliação. Tente novamente.</div>';
+      } finally {
+        loadingOverlay.classList.remove("active");
+      }
+    });
+  </script>
+  
+  <footer style="text-align: center; margin-top: 40px; padding: 20px; color: #666; border-top: 1px solid #eee;">
+    <p>Todos os direitos reservados</p>
+  </footer>
+</body>
+</html>

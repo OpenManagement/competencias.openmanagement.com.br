@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagamento Não Processado - Diagnóstico Premium</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            max-width: 600px;
+            background: rgba(255,255,255,0.1);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .error-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        .btn {
+            background: #4caf50;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="error-icon">😔</div>
+        <h1>Pagamento Não Processado</h1>
+        
+        <p>Não foi possível processar seu pagamento no momento.</p>
+        <p>Isso pode acontecer por diversos motivos, como:</p>
+        
+        <ul style="text-align: left; max-width: 400px; margin: 20px auto;">
+            <li>Cancelamento durante o processo</li>
+            <li>Problemas temporários com o método de pagamento</li>
+            <li>Limite de cartão atingido</li>
+            <li>Dados incorretos</li>
+        </ul>
+        
+        <p><strong>Não se preocupe!</strong> Você pode tentar novamente a qualquer momento.</p>
+        
+        <a href="/" class="btn">
+            🔄 Tentar Novamente
+        </a>
+        
+        <a href="/" class="btn-secondary">
+            🆓 Continuar com Versão Gratuita
+        </a>
+        
+        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.3);">
+            <p><strong>@adrianadacruz_</strong> | <strong>@faca.bem</strong></p>
+            <p>Estamos aqui para ajudar no seu desenvolvimento!</p>
+        </div>
+    </div>
+</body>
+</html>
+

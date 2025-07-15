@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagamento Aprovado - Diagnóstico Premium</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            max-width: 600px;
+            background: rgba(255,255,255,0.1);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .success-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        .btn {
+            background: #4caf50;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="success-icon">🎉</div>
+        <h1>Pagamento Aprovado!</h1>
+        
+        {% if tem_avaliacao %}
+            <p>Parabéns, <strong>{{ nome }}</strong>!</p>
+            <p>Seu pagamento foi processado com sucesso e você agora tem acesso completo ao diagnóstico premium.</p>
+            
+            <div style="margin: 30px 0;">
+                <h3>💎 Você desbloqueou:</h3>
+                <ul style="text-align: left; max-width: 400px; margin: 0 auto;">
+                    <li>✅ Plano completo de desenvolvimento (90 dias)</li>
+                    <li>✅ 6 ações detalhadas com passo a passo</li>
+                    <li>✅ Relatório PDF profissional</li>
+                    <li>✅ Envio automático por e-mail</li>
+                    <li>✅ Metas específicas para cada ação</li>
+                </ul>
+            </div>
+            
+            <a href="/relatorio_premium" class="btn">
+                📄 Acessar Relatório Premium
+            </a>
+            
+            <p style="margin-top: 20px; font-size: 0.9em;">
+                📧 O relatório PDF também foi enviado para seu e-mail!
+            </p>
+        {% else %}
+            <p>Seu pagamento foi processado com sucesso!</p>
+            <p>Para acessar o diagnóstico premium, faça uma nova avaliação.</p>
+            
+            <a href="/" class="btn">
+                🎯 Fazer Avaliação
+            </a>
+        {% endif %}
+        
+        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.3);">
+            <p><strong>@adrianadacruz_</strong> | <strong>@faca.bem</strong></p>
+            <p>Obrigado por investir no seu desenvolvimento!</p>
+        </div>
+    </div>
+</body>
+</html>
+
