@@ -1,3 +1,4 @@
+from threading import Thread
 from flask import Flask, render_template, request, jsonify, url_for, session, redirect
 import logging
 from datetime import datetime
@@ -9,7 +10,20 @@ from email import encoders
 import platform, os, pdfkit
 import mercadopago
 from tabela_referencia_competencias import COMPETENCIAS_ACOES
-from threading import Thread
+
+def gerar_e_enviar_relatorio(email_usuario, html_relatorio, pdf_path):
+    try:
+        pdfkit.from_string(
+            html_relatorio,
+            pdf_path,
+            configuration=pdf_config,
+            options=options
+        )
+        logger.info(f"PDF gerado em background: {pdf_path}")
+        send_email_with_attachment(email_usuario, pdf_path)
+        logger.info(f"E-mail enviado em background para: {email_usuario}")
+    except Exception:
+        logger.exception("Erro em background ao gerar PDF ou enviar e-mail")
 
 # Configuração do wkhtmltopdf
 if platform.system().lower() == 'windows':
@@ -508,41 +522,23 @@ def verificar_premium():
 
 @app.route('/submit_avaliacao', methods=['POST'])
 def submit_avaliacao():
-    try:
-        # 1) Obter dados do formulário
-        nome = request.form.get('nome_completo', '').strip()
-        email = request.form.get('email', '').strip()
-        celular = request.form.get('celular', '').strip()
-        tipo_experiencia = request.form.get('tipo_experiencia', 'gratuita').strip()
-        
-        # 2) Validar dados obrigatórios
-        if not nome or not email:
-            return jsonify({
-                'success': False,
-                'message': 'Nome e email são obrigatórios'
-            }), 400
-
-        # 3) Processar respostas e montar dados para o relatório
-        respostas = json.loads(request.form.get('respostas', '[]'))
-        # … aqui seu código atual de lógica de competências …
-        html_relatorio = render_template('relatorio_virtual.html', dados=meus_dados)
-        pdf_path = f"relatorios_temp/{email.replace('@','_')}.pdf"
-
-        # 4) Geração do PDF com tratamento de exceção
+            # 4) Dispara geração + envio em background
         try:
-            pdfkit.from_string(
-                html_relatorio,
-                pdf_path,
-                configuration=pdf_config,
-                options=options
-            )
-            logger.info(f"PDF gerado: {pdf_path}")
+            Thread(
+                target=gerar_e_enviar_relatorio,
+                args=(email, html_relatorio, pdf_path),
+                daemon=True
+            ).start()
         except Exception:
-            logger.exception("Falha ao gerar PDF")
+            logger.exception("Falha ao disparar thread de PDF/e-mail")
             return jsonify({
                 'success': False,
-                'message': 'Erro interno ao gerar PDF. Tente novamente.'
+                'message': 'Erro interno. Tente novamente.'
             }), 500
+
+        # 5) Retorna resposta de sucesso imediatamente
+        return jsonify({'success': True}), 202
+
 
         # 5) Envio de e-mail com tratamento de exceção
         try:
