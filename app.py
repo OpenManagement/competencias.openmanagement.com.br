@@ -9,6 +9,7 @@ from email import encoders
 import platform, os, pdfkit
 import mercadopago
 from tabela_referencia_competencias import COMPETENCIAS_ACOES
+from threading import Thread
 
 # Configuração do wkhtmltopdf
 if platform.system().lower() == 'windows':
@@ -508,18 +509,62 @@ def verificar_premium():
 @app.route('/submit_avaliacao', methods=['POST'])
 def submit_avaliacao():
     try:
-        # Obter dados do formulário
+        # 1) Obter dados do formulário
         nome = request.form.get('nome_completo', '').strip()
         email = request.form.get('email', '').strip()
         celular = request.form.get('celular', '').strip()
         tipo_experiencia = request.form.get('tipo_experiencia', 'gratuita').strip()
         
-        # Validar dados obrigatórios
+        # 2) Validar dados obrigatórios
         if not nome or not email:
             return jsonify({
                 'success': False,
                 'message': 'Nome e email são obrigatórios'
             }), 400
+
+        # 3) Processar respostas e montar dados para o relatório
+        respostas = json.loads(request.form.get('respostas', '[]'))
+        # … aqui seu código atual de lógica de competências …
+        html_relatorio = render_template('relatorio_virtual.html', dados=meus_dados)
+        pdf_path = f"relatorios_temp/{email.replace('@','_')}.pdf"
+
+        # 4) Geração do PDF com tratamento de exceção
+        try:
+            pdfkit.from_string(
+                html_relatorio,
+                pdf_path,
+                configuration=pdf_config,
+                options=options
+            )
+            logger.info(f"PDF gerado: {pdf_path}")
+        except Exception:
+            logger.exception("Falha ao gerar PDF")
+            return jsonify({
+                'success': False,
+                'message': 'Erro interno ao gerar PDF. Tente novamente.'
+            }), 500
+
+        # 5) Envio de e-mail com tratamento de exceção
+        try:
+            send_email_with_attachment(email, pdf_path)
+            logger.info(f"E-mail enviado para {email}")
+        except Exception:
+            logger.exception("Falha ao enviar e-mail")
+            return jsonify({
+                'success': False,
+                'message': 'Erro interno ao enviar e-mail. Tente novamente.'
+            }), 500
+
+        # 6) Tudo ok
+        return jsonify({'success': True}), 200
+
+    except Exception:
+        # Captura qualquer outro erro inesperado
+        logger.exception("Erro geral em submit_avaliacao")
+        return jsonify({
+            'success': False,
+            'message': 'Erro interno. Por favor, tente novamente.'
+        }), 500
         
         # Controle de acesso premium
         if tipo_experiencia == 'premium':
@@ -646,14 +691,19 @@ def submit_avaliacao():
                 'no-stop-slow-scripts': ''  # Não parar scripts lentos
             }
             
-            # Gerar PDF com tratamento de exceções robusto
-            pdfkit.from_string(
-                html_relatorio,
-                pdf_path,
-                configuration=pdf_config,
-                options=options
-            )
-            logger.info(f"PDF gerado: {pdf_path}")
+           # Gerar PDF com tratamento de exceções robusto
+try:
+    pdfkit.from_string(
+        html_relatorio,
+        pdf_path,
+        configuration=pdf_config,
+        options=options
+    )
+    logger.info(f"PDF gerado: {pdf_path}")
+except Exception as e:
+    logger.error("Falha ao gerar PDF", exc_info=True)
+    # se estiver dentro de um handler Flask, devolva um JSON de erro; por exemplo:
+    return jsonify({"error": "Erro interno ao gerar PDF. Tente novamente."}), 500
             
             # Verificar se o arquivo foi criado e tem tamanho válido
             if os.path.exists(pdf_path) and os.path.getsize(pdf_path) > 0:
