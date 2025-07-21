@@ -10,20 +10,38 @@ from email import encoders
 import platform, os, pdfkit
 import mercadopago
 from tabela_referencia_competencias import COMPETENCIAS_ACOES
+import traceback
+logger = logging.getLogger(__name__)
 
 def gerar_e_enviar_relatorio(email_usuario, html_relatorio, pdf_path):
+    logger.info("→ [Thread] Iniciando geração de relatório")
     try:
+        logger.debug(f"[Thread] email={email_usuario}, pdf_path={pdf_path}")
+        logger.debug(f"[Thread] HTML length: {len(html_relatorio)} chars")
+        # 1) Gera o PDF
         pdfkit.from_string(
             html_relatorio,
             pdf_path,
             configuration=pdf_config,
             options=options
         )
-        logger.info(f"PDF gerado em background: {pdf_path}")
-        send_email_with_attachment(email_usuario, pdf_path)
-        logger.info(f"E-mail enviado em background para: {email_usuario}")
+        logger.info(f"✔ [Thread] PDF gerado: {pdf_path}")
     except Exception:
-        logger.exception("Erro em background ao gerar PDF ou enviar e-mail")
+        tb = traceback.format_exc()
+        logger.error("✖ [Thread] Erro ao gerar PDF:\n" + tb)
+        with open("error_background.log", "a") as f:
+            f.write(f"{datetime.now()} - ERRO PDF\n{tb}\n\n")
+        return
+
+    try:
+        logger.info("→ [Thread] Iniciando envio de e-mail")
+        send_email_with_attachment(email_usuario, pdf_path)
+        logger.info(f"✔ [Thread] E-mail enviado para: {email_usuario}")
+    except Exception:
+        tb = traceback.format_exc()
+        logger.error("✖ [Thread] Erro ao enviar e-mail:\n" + tb)
+        with open("error_background.log", "a") as f:
+            f.write(f"{datetime.now()} - ERRO EMAIL\n{tb}\n\n")
 
 # Configuração do wkhtmltopdf
 if platform.system().lower() == 'windows':
@@ -743,6 +761,23 @@ except Exception as e:
             'success': False,
             'message': 'Erro interno do servidor'
         }), 500
+
+@app.route('/debug_report', methods=['POST'])
+def debug_report():
+    """
+    POST JSON: {'email':'seu@mail.com','dados':{…}}
+    Retorna o traceback em caso de falha.
+    """
+    data = request.get_json(force=True)
+    email = data.get('email')
+    html = render_template('relatorio_virtual.html', dados=data.get('dados', {}))
+    pdf_path = f"relatorios_temp/debug_{email.replace('@','_')}.pdf"
+    try:
+        gerar_e_enviar_relatorio(email, html, pdf_path)
+        return jsonify({"ok": True, "pdf_path": pdf_path}), 200
+    except Exception:
+        tb = traceback.format_exc()
+        return jsonify({"ok": False, "error": tb}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=9000)
