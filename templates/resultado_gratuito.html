@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultado da Avaliação - Diagnóstico de Competências</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2.5em;
+        }
+        .header p {
+            margin: 0;
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 40px;
+        }
+        .score-section {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 15px;
+            color: white;
+        }
+        .score-main {
+            font-size: 4em;
+            font-weight: bold;
+            margin: 0;
+        }
+        .score-label {
+            font-size: 1.2em;
+            margin: 10px 0 0 0;
+        }
+        .competencias-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .competencia-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            border-left: 5px solid #667eea;
+            transition: transform 0.3s;
+        }
+        .competencia-card:hover {
+            transform: translateY(-5px);
+        }
+        .competencia-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .competencia-emoji {
+            font-size: 2em;
+            margin-right: 15px;
+        }
+        .competencia-nome {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+        }
+        .competencia-score {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            text-align: center;
+            margin: 15px 0;
+        }
+        .progress-bar {
+            background: #e9ecef;
+            border-radius: 10px;
+            height: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 10px;
+            transition: width 0.8s ease;
+        }
+        .plano-preview {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 40px 0;
+            border: 2px dashed #dee2e6;
+            position: relative;
+        }
+        .plano-preview::before {
+            content: "🔒 PREMIUM";
+            position: absolute;
+            top: -15px;
+            right: 20px;
+            background: #ffc107;
+            color: #000;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        .plano-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .competencia-preview {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+        .competencia-preview h3 {
+            margin: 0 0 15px 0;
+            color: #667eea;
+            font-size: 1.3em;
+        }
+        .acoes-preview {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .acao-preview {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            color: #666;
+            position: relative;
+        }
+        .acao-preview:last-child {
+            border-bottom: none;
+        }
+        .acao-preview::before {
+            content: "🔒";
+            margin-right: 10px;
+        }
+        .grau-badge {
+            background: #e9ecef;
+            color: #666;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .upgrade-section {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            margin: 40px 0;
+        }
+        .upgrade-title {
+            font-size: 2.2em;
+            margin: 0 0 20px 0;
+        }
+        .upgrade-benefits {
+            list-style: none;
+            padding: 0;
+            margin: 30px 0;
+            text-align: left;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .upgrade-benefits li {
+            padding: 8px 0;
+            font-size: 1.1em;
+        }
+        .upgrade-benefits li::before {
+            content: "✅ ";
+            margin-right: 10px;
+        }
+        .upgrade-btn {
+            background: #ffc107;
+            color: #000;
+            padding: 20px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.3em;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+            margin: 20px 0;
+        }
+        .upgrade-btn:hover {
+            background: #ffcd39;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .price {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .footer {
+            background: #343a40;
+            color: white;
+            text-align: center;
+            padding: 30px;
+        }
+        .footer p {
+            margin: 5px 0;
+        }
+        .logo {
+            max-width: 150px;
+            height: auto;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            .header {
+                padding: 30px 20px;
+            }
+            .header h1 {
+                font-size: 2em;
+            }
+            .content {
+                padding: 20px;
+            }
+            .competencias-grid {
+                grid-template-columns: 1fr;
+            }
+            .score-main {
+                font-size: 3em;
+            }
+            .upgrade-title {
+                font-size: 1.8em;
+            }
+            .price {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo Faça Bem" class="logo">
+            <h1>🎯 Diagnóstico de Avaliação de Competências</h1>
+            <p>Resultado da sua autoavaliação</p>
+        </div>
+        
+        <div class="content">
+            <!-- Pontuação Geral -->
+            <div class="score-section">
+                <h2 style="margin: 0 0 20px 0;">Sua Pontuação Geral</h2>
+                <div class="score-main">{{ "%.2f"|format(media_geral) }}/5.00</div>
+                <p class="score-label">
+                    {% if media_geral >= 4.0 %}
+                        🌟 Excelente! Você demonstra alto nível de competências.
+                    {% elif media_geral >= 3.0 %}
+                        👍 Bom! Você tem uma base sólida com oportunidades de melhoria.
+                    {% elif media_geral >= 2.0 %}
+                        📈 Em desenvolvimento! Há muito potencial para crescimento.
+                    {% else %}
+                        🚀 Início da jornada! Grandes oportunidades de desenvolvimento à frente.
+                    {% endif %}
+                </p>
+            </div>
+            
+            <!-- Ranking das Competências -->
+            <h2 style="text-align: center; margin-bottom: 30px;">📊 Suas Competências em Detalhes</h2>
+            <div class="competencias-grid">
+                {% for competencia in ranking.todas %}
+                <div class="competencia-card">
+                    <div class="competencia-header">
+                        <span class="competencia-emoji">{{ competencia.emoji }}</span>
+                        <span class="competencia-nome">{{ competencia.nome }}</span>
+                    </div>
+                    <div class="competencia-score">{{ "%.2f"|format(competencia.media) }}/5.00</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ (competencia.media / 5.0 * 100)|round }}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Preview do Plano (Bloqueado) -->
+            <div class="plano-preview">
+                <h2 class="plano-title">🎯 Seu Plano de Desenvolvimento Personalizado</h2>
+                <p style="color: #666; margin-bottom: 30px;">
+                    Baseado na sua avaliação, identificamos suas <strong>2 competências com maior oportunidade de melhoria</strong>. 
+                    Veja um preview do que você receberá no plano completo:
+                </p>
+                
+                {% for competencia_preview in plano_preview %}
+                <div class="competencia-preview">
+                    <h3>{{ competencia_preview.emoji }} {{ competencia_preview.competencia }} ({{ "%.2f"|format(competencia_preview.media) }}/5.00)</h3>
+                    <ul class="acoes-preview">
+                        {% for acao in competencia_preview.acoes %}
+                        <li class="acao-preview">
+                            <span class="grau-badge">GRAU {{ acao.grau }}</span>
+                            {{ acao.acao }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endfor %}
+                
+                <div style="text-align: center; margin-top: 30px; padding: 20px; background: rgba(255,193,7,0.1); border-radius: ough outcomes...
+                </div>
+            </div>
+            
+            <!-- Seção de Upgrade -->
+            <div class="upgrade-section">
+                <h2 class="upgrade-title">💎 Desbloqueie o Plano Completo</h2>
+                <p style="font-size: 1.2em; margin-bottom: 30px;">
+                    Transforme seus resultados em ações concretas com o diagnóstico premium!
+                </p>
+                
+                <div class="price">R$ {{ "%.2f"|format(preco_premium) }}</div>
+                <p style="margin: 0 0 30px 0; font-size: 1.1em;">Pagamento único • Acesso vitalício</p>
+                
+                <ul class="upgrade-benefits">
+                    <li><strong>Plano completo de desenvolvimento</strong> (90 dias)</li>
+                    <li><strong>6 ações detalhadas</strong> com passo a passo</li>
+                    <li><strong>Tabelas completas</strong> para cada ação</li>
+                    <li><strong>Relatório PDF profissional</strong></li>
+                    <li><strong>Envio automático por e-mail</strong></li>
+                    <li><strong>Metas específicas</strong> para cada competência</li>
+                    <li><strong>Progressão por graus</strong> (fácil → avançado)</li>
+                </>
