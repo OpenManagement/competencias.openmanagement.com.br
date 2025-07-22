@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Diagnóstico de Competências - {{ nome }}</title>
+    <style>
+        /* CSS INLINE COMPLETO - SEM DEPENDÊNCIAS EXTERNAS */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #333;
+            margin: 15px;
+            background: white;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+        
+        /* CABEÇALHO */
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+            page-break-inside: avoid;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .header h2 {
+            color: #34495e;
+            font-size: 18px;
+            margin: 8px 0;
+        }
+        
+        .header .subtitle {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+        
+        /* INFORMAÇÕES PESSOAIS */
+        .info-pessoal {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            page-break-inside: avoid;
+        }
+        
+        .info-pessoal h3 {
+            color: #2c3e50;
+            font-size: 14px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 5px;
+        }
+        
+        .info-item {
+            margin: 8px 0;
+            font-size: 11px;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #495057;
+            display: inline-block;
+            width: 80px;
+        }
+        
+        /* PONTUAÇÃO GERAL */
+        .pontuacao-geral {
+            text-align: center;
+            background: #e8f5e8;
+            border: 2px solid #27ae60;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            page-break-inside: avoid;
+        }
+        
+        .pontuacao-geral h3 {
+            color: #2c3e50;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        
+        .pontuacao-numero {
+            font-size: 36px;
+            font-weight: bold;
+            color: #27ae60;
+            margin: 15px 0;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .pontuacao-descricao {
+            color: #2c3e50;
+            font-size: 12px;
+            font-style: italic;
+            margin-top: 10px;
+        }
+        
+        /* SEÇÕES */
+        .secao {
+            margin: 25px 0;
+            page-break-inside: avoid;
+        }
+        
+        .secao h3 {
+            color: #2c3e50;
+            font-size: 16px;
+            font-weight: bold;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .secao-descricao {
+            color: #555;
+            font-size: 11px;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+        
+        /* COMPETÊNCIAS */
+        .competencia {
+            margin: 12px 0;
+            padding: 12px;
+            border-left: 4px solid #3498db;
+            background: #f8f9fa;
+            border-radius: 0 6px 6px 0;
+        }
+        
+        .competencia.destaque {
+            background: #e8f5e8;
+            border-left-color: #27ae60;
+        }
+        
+        .competencia.oportunidade {
+            background: #fdf2e9;
+            border-left-color: #f39c12;
+        }
+        
+        .competencia-nome {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+        
+        .competencia-pontuacao {
+            font-weight: bold;
+            color: #e74c3c;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+        
+        .competencia-nivel {
+            color: #7f8c8d;
+            font-size: 10px;
+            font-style: italic;
+        }
+        
+        .competencia-descricao {
+            color: #555;
+            font-size: 10px;
+            margin-top: 8px;
+            line-height: 1.3;
+        }
+        
+        /* TABELAS */
+        .ranking-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 11px;
+        }
+        
+        .ranking-table th,
+        .ranking-table td {
+            border: 1px solid #dee2e6;
+            padding: 8px 6px;
+            text-align: left;
+            vertical-align: middle;
+        }
+        
+        .ranking-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 10px;
+        }
+        
+        .ranking-table tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        
+        .ranking-table tr.destaque {
+            background: #e8f5e8 !important;
+        }
+        
+        .ranking-table tr.oportunidade {
+            background: #fdf2e9 !important;
+        }
+        
+        /* BARRA DE PROGRESSO */
+        .progress-container {
+            width: 100%;
+            margin: 5px 0;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background-color: #e9ecef;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #dee2e6;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db 0%, #2980b9 100%);
+            transition: width 0.3s ease;
+            border-radius: 5px 0 0 5px;
+        }
+        
+        .progress-text {
+            font-size: 9px;
+            color: #6c757d;
+            margin-top: 2px;
+        }
+        
+        /* PLANO DE DESENVOLVIMENTO */
+        .plano-item {
+            margin: 15px 0;
+            padding: 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            background: #ffffff;
+            page-break-inside: avoid;
+        }
+        
+        .plano-competencia {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 12px;
+            margin-bottom: 8px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .plano-acoes {
+            margin-left: 0;
+            padding-left: 0;
+        }
+        
+        .plano-acoes ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .plano-acoes li {
+            margin: 6px 0;
+            color: #495057;
+            font-size: 11px;
+            line-height: 1.4;
+        }
+        
+        /* RODAPÉ */
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #e9ecef;
+            text-align: center;
+            color: #6c757d;
+            font-size: 10px;
+            page-break-inside: avoid;
+        }
+        
+        .footer .logo-text {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+        
+        .footer .contact {
+            margin: 3px 0;
+        }
+        
+        /* QUEBRAS DE PÁGINA */
+        .page-break {
+            page-break-before: always;
+        }
+        
+        .no-break {
+            page-break-inside: avoid;
+        }
+        
+        /* IMPRESSÃO */
+        @media print {
+            body {
+                margin: 10mm;
+                font-size: 11px;
+            }
+            
+            .header {
+                margin-bottom: 20px;
+            }
+            
+            .secao {
+                margin: 20px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- CABEÇALHO -->
+        <div class="header no-break">
+            <h1>🎯 Diagnóstico de Competências</h1>
+            <h2>{{ nome }}</h2>
+            <div class="subtitle">Método Faça Bem - Desenvolvimento Profissional</div>
+        </div>
+
+        <!-- INFORMAÇÕES PESSOAIS -->
+        <div class="info-pessoal no-break">
+            <h3>📋 Informações da Avaliação</h3>
+            <div class="info-item">
+                <span class="info-label">Nome:</span> {{ nome }}
+            </div>
+            <div class="info-item">
+                <span class="info-label">E-mail:</span> {{ email }}
+            </div>
+            {% if celular %}
+            <div class="info-item">
+                <span class="info-label">Celular:</span> {{ celular }}
+            </div>
+            {% endif %}
+            <div class="info-item">
+                <span class="info-label">Data:</span> {{ data_avaliacao }} às {{ hora_avaliacao }}
+            </div>
+        </div>
+
+        <!-- PONTUAÇÃO GERAL -->
+        <div class="pontuacao-geral no-break">
+            <h3>🏆 Pontuação Geral</h3>
+            <div class="pontuacao-numero">{{ "%.2f"|format(pontuacao_geral) }}/5.00</div>
+            <div class="pontuacao-descricao">
+                {% if pontuacao_geral >= 4.5 %}
+                    Excelente desempenho! Você demonstra alto nível nas competências avaliadas.
+                {% elif pontuacao_geral >= 3.5 %}
+                    Bom desempenho! Você possui competências sólidas com oportunidades de aprimoramento.
+                {% elif pontuacao_geral >= 2.5 %}
+                    Desempenho regular. Há boas bases para desenvolvimento das competências.
+                {% else %}
+                    Há muito potencial para crescimento. Este diagnóstico é o primeiro passo para seu desenvolvimento.
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- RANKING DAS COMPETÊNCIAS -->
+        <div class="secao">
+            <h3>📊 Ranking das Competências</h3>
+            <div class="secao-descricao">
+                Suas competências ordenadas da maior para a menor pontuação:
+            </div>
+            
+            <table class="ranking-table">
+                <thead>
+                    <tr>
+                        <th style="width: 10%;">Pos.</th>
+                        <th style="width: 35%;">Competência</th>
+                        <th style="width: 15%;">Pontuação</th>
+                        <th style="width: 15%;">Nível</th>
+                        <th style="width: 25%;">Progresso</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for competencia in ranking_principais %}
+                    <tr {% if loop.index <= 2 %}class="destaque"{% elif loop.index >= 4 %}class="oportunidade"{% endif %}>
+                        <td style="text-align: center; font-weight: bold;">{{ loop.index }}º</td>
+                        <td>{{ competencia.nome }}</td>
+                        <td style="text-align: center; font-weight: bold; color: #e74c3c;">{{ "%.2f"|format(competencia.pontuacao) }}</td>
+                        <td style="text-align: center;">{{ competencia.nivel }}</td>
+                        <td>
+                            <div class="progress-container">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: {{ (competencia.pontuacao / 5 * 100)|round }}%"></div>
+                                </div>
+                                <div class="progress-text">{{ (competencia.pontuacao / 5 * 100)|round }}%</div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PONTOS FORTES -->
+        <div class="secao">
+            <h3>💪 Seus Pontos Fortes</h3>
+            <div class="secao-descricao">
+                Estas são suas competências mais desenvolvidas. Continue investindo nelas para manter sua excelência:
+            </div>
+            
+            {% for ponto in pontos_fortes %}
+            <div class="competencia destaque">
+                <div class="competencia-nome">{{ loop.index }}. {{ ponto.nome }}</div>
+                <div class="competencia-pontuacao">{{ "%.2f"|format(ponto.pontuacao) }}/5.00</div>
+                <div class="competencia-nivel">Nível: {{ ponto.nivel }}</div>
+                <div class="competencia-descricao">
+                    {% if ponto.nome == 'Comunicação' %}
+                        Excelente capacidade de escuta ativa, empatia e expressão clara. Fundamental para relacionamentos e liderança.
+                    {% elif ponto.nome == 'Organização' %}
+                        Ótima gestão de tempo, prioridades e sistemas pessoais. Base sólida para produtividade e eficiência.
+                    {% elif ponto.nome == 'Proatividade' %}
+                        Grande iniciativa, responsabilidade e foco em resultados. Diferencial importante para crescimento profissional.
+                    {% elif ponto.nome == 'Pensamento Crítico' %}
+                        Excelente capacidade de análise, reflexão e tomada de decisões conscientes. Essencial para resolução de problemas.
+                    {% elif ponto.nome == 'Produtividade' %}
+                        Alta eficiência, foco e gestão de energia. Maximiza resultados com menor esforço.
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- OPORTUNIDADES DE MELHORIA -->
+        <div class="secao">
+            <h3>🎯 Oportunidades de Melhoria</h3>
+            <div class="secao-descricao">
+                Estas competências têm maior potencial de crescimento e impacto em sua performance:
+            </div>
+            
+            {% for oportunidade in oportunidades %}
+            <div class="competencia oportunidade">
+                <div class="competencia-nome">{{ loop.index }}. {{ oportunidade.nome }}</div>
+                <div class="competencia-pontuacao">{{ "%.2f"|format(oportunidade.pontuacao) }}/5.00</div>
+                <div class="competencia-nivel">Nível: {{ oportunidade.nivel }}</div>
+                <div class="competencia-descricao">
+                    {% if oportunidade.nome == 'Comunicação' %}
+                        Desenvolver habilidades de escuta ativa, empatia e expressão clara trará grandes benefícios para relacionamentos.
+                    {% elif oportunidade.nome == 'Organização' %}
+                        Melhorar gestão de tempo e prioridades aumentará significativamente sua produtividade e eficiência.
+                    {% elif oportunidade.nome == 'Proatividade' %}
+                        Desenvolver mais iniciativa e responsabilidade será um diferencial importante para seu crescimento.
+                    {% elif oportunidade.nome == 'Pensamento Crítico' %}
+                        Aprimorar análise e reflexão melhorará sua capacidade de resolver problemas complexos.
+                    {% elif oportunidade.nome == 'Produtividade' %}
+                        Aumentar eficiência e foco permitirá maximizar seus resultados com menor esforço.
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- PLANO DE DESENVOLVIMENTO -->
+        {% if plano_desenvolvimento %}
+        <div class="secao page-break">
+            <h3>📋 Plano de Desenvolvimento Personalizado</h3>
+            <div class="secao-descricao">
+                Ações práticas e específicas para desenvolver suas competências prioritárias:
+            </div>
+            
+            {% for item in plano_desenvolvimento %}
+            <div class="plano-item no-break">
+                <div class="plano-competencia">
+                    🎯 {{ item.competencia }} ({{ "%.2f"|format(item.pontuacao) }}/5.00)
+                </div>
+                <div class="plano-acoes">
+                    <ul>
+                        {% for acao in item.acoes %}
+                        <li>{{ acao }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- DETALHAMENTO POR COMPETÊNCIA -->
+        <div class="secao page-break">
+            <h3>📈 Detalhamento por Competência</h3>
+            <div class="secao-descricao">
+                Análise individual de cada uma das 5 competências avaliadas:
+            </div>
+            
+            {% for nome, dados in competencias_principais.items() %}
+            <div class="competencia no-break">
+                <div class="competencia-nome">{{ nome }}</div>
+                <div class="competencia-pontuacao">{{ "%.2f"|format(dados.pontuacao) }}/5.00 - {{ dados.nivel }}</div>
+                
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ (dados.pontuacao / 5 * 100)|round }}%"></div>
+                    </div>
+                    <div class="progress-text">{{ (dados.pontuacao / 5 * 100)|round }}% desenvolvido</div>
+                </div>
+                
+                <div class="competencia-descricao">
+                    {% if nome == 'Comunicação' %}
+                        <strong>Comunicação:</strong> Habilidades de escuta ativa, empatia, expressão clara e assertiva. Fundamental para relacionamentos interpessoais, trabalho em equipe e liderança. Inclui comunicação verbal, não-verbal e escrita.
+                    {% elif nome == 'Organização' %}
+                        <strong>Organização:</strong> Gestão eficaz de tempo, prioridades, recursos e sistemas pessoais. Base para produtividade, eficiência e cumprimento de prazos. Inclui planejamento, estruturação e controle de atividades.
+                    {% elif nome == 'Proatividade' %}
+                        <strong>Proatividade:</strong> Iniciativa, responsabilidade pessoal e foco em resultados. Capacidade de antecipar problemas, buscar soluções e agir sem necessidade de supervisão constante. Diferencial para crescimento profissional.
+                    {% elif nome == 'Pensamento Crítico' %}
+                        <strong>Pensamento Crítico:</strong> Capacidade de análise, reflexão, questionamento e tomada de decisões conscientes. Essencial para resolução de problemas complexos, inovação e melhoria contínua.
+                    {% elif nome == 'Produtividade' %}
+                        <strong>Produtividade:</strong> Eficiência, foco, gestão de energia e otimização de resultados. Capacidade de maximizar output com menor input, eliminando desperdícios e mantendo alta qualidade.
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- RODAPÉ -->
+        <div class="footer">
+            <div class="logo-text">Método Faça Bem - Desenvolvimento de Competências</div>
+            <div class="contact">Relatório gerado em {{ data_avaliacao }} às {{ hora_avaliacao }}</div>
+            <div class="contact">consultoria@openmanagement.com.br</div>
+            <div class="contact">Este diagnóstico é uma ferramenta de autoconhecimento e desenvolvimento profissional.</div>
+        </div>
+    </div>
+</body>
+</html>
+
