@@ -1,4 +1,3 @@
-from threading import Thread
 from flask import Flask, render_template, request, jsonify, url_for, session, redirect
 import logging
 from datetime import datetime
@@ -7,49 +6,14 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
-import platform, os, pdfkit
+import pdfkit
+import os
 import mercadopago
 from tabela_referencia_competencias import COMPETENCIAS_ACOES
-import traceback
-logger = logging.getLogger(__name__)
+from dotenv import load_dotenv
 
-def gerar_e_enviar_relatorio(email_usuario, html_relatorio, pdf_path):
-    logger.info("→ [Thread] Iniciando geração de relatório")
-    try:
-        logger.debug(f"[Thread] email={email_usuario}, pdf_path={pdf_path}")
-        logger.debug(f"[Thread] HTML length: {len(html_relatorio)} chars")
-        # 1) Gera o PDF
-        pdfkit.from_string(
-            html_relatorio,
-            pdf_path,
-            configuration=pdf_config,
-            options=options
-        )
-        logger.info(f"✔ [Thread] PDF gerado: {pdf_path}")
-    except Exception:
-        tb = traceback.format_exc()
-        logger.error("✖ [Thread] Erro ao gerar PDF:\n" + tb)
-        with open("error_background.log", "a") as f:
-            f.write(f"{datetime.now()} - ERRO PDF\n{tb}\n\n")
-        return
-
-    try:
-        logger.info("→ [Thread] Iniciando envio de e-mail")
-        send_email_with_attachment(email_usuario, pdf_path)
-        logger.info(f"✔ [Thread] E-mail enviado para: {email_usuario}")
-    except Exception:
-        tb = traceback.format_exc()
-        logger.error("✖ [Thread] Erro ao enviar e-mail:\n" + tb)
-        with open("error_background.log", "a") as f:
-            f.write(f"{datetime.now()} - ERRO EMAIL\n{tb}\n\n")
-
-# Configuração do wkhtmltopdf
-if platform.system().lower() == 'windows':
-    WKHTMLTOPDF_PATH = r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe"
-else:
-    WKHTMLTOPDF_PATH = "/usr/bin/wkhtmltopdf"
-
-pdf_config = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_PATH)
+# Carregar variáveis de ambiente do arquivo .env
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
@@ -540,45 +504,19 @@ def verificar_premium():
 
 @app.route('/submit_avaliacao', methods=['POST'])
 def submit_avaliacao():
-            # 4) Dispara geração + envio em background
-        try:
-            Thread(
-                target=gerar_e_enviar_relatorio,
-                args=(email, html_relatorio, pdf_path),
-                daemon=True
-            ).start()
-        except Exception:
-            logger.exception("Falha ao disparar thread de PDF/e-mail")
+    try:
+        # Obter dados do formulário
+        nome = request.form.get('nome_completo', '').strip()
+        email = request.form.get('email', '').strip()
+        celular = request.form.get('celular', '').strip()
+        tipo_experiencia = request.form.get('tipo_experiencia', 'gratuita').strip()
+        
+        # Validar dados obrigatórios
+        if not nome or not email:
             return jsonify({
                 'success': False,
-                'message': 'Erro interno. Tente novamente.'
-            }), 500
-
-        # 5) Retorna resposta de sucesso imediatamente
-        return jsonify({'success': True}), 202
-
-
-        # 5) Envio de e-mail com tratamento de exceção
-        try:
-            send_email_with_attachment(email, pdf_path)
-            logger.info(f"E-mail enviado para {email}")
-        except Exception:
-            logger.exception("Falha ao enviar e-mail")
-            return jsonify({
-                'success': False,
-                'message': 'Erro interno ao enviar e-mail. Tente novamente.'
-            }), 500
-
-        # 6) Tudo ok
-        return jsonify({'success': True}), 200
-
-    except Exception:
-        # Captura qualquer outro erro inesperado
-        logger.exception("Erro geral em submit_avaliacao")
-        return jsonify({
-            'success': False,
-            'message': 'Erro interno. Por favor, tente novamente.'
-        }), 500
+                'message': 'Nome e email são obrigatórios'
+            }), 400
         
         # Controle de acesso premium
         if tipo_experiencia == 'premium':
@@ -648,16 +586,13 @@ def submit_avaliacao():
         
         # Substituir URLs relativos por caminhos absolutos para o PDF
         import re
-        base_url = request.url_root
+        # Usar caminhos absolutos locais para recursos estáticos
+        current_dir = os.path.abspath('.')
         html_relatorio = re.sub(
-            r'src="([^"]*)"',
-            lambda m: f'src="{base_url.rstrip("/")}{m.group(1)}"' if m.group(1).startswith('/') else m.group(0),
+            r'src="/static/([^"]*)"',
+            lambda m: f'src="file://{current_dir}/static/{m.group(1)}"',
             html_relatorio
         )
-        
-        # Remover apenas scripts que podem causar timeout, preservar CSS
-        html_relatorio = re.sub(r'<script[^>]*>.*?</script>', '', html_relatorio, flags=re.DOTALL)
-        
         
         # Gerar PDF e salvar em pasta acessível
         pdf_path = None
@@ -672,7 +607,7 @@ def submit_avaliacao():
             
             pdf_path = os.path.join(reports_dir, pdf_filename)
             
-            # Opções para geração do PDF otimizadas para evitar timeout
+            # Opções otimizadas para geração do PDF
             options = {
                 'page-size': 'A4',
                 'margin-top': '0.75in',
@@ -686,38 +621,24 @@ def submit_avaliacao():
                 'print-media-type': '',
                 'images': '',
                 'zoom': '1.0',
-                'dpi': '150',  # Reduzido para melhor performance
-                'image-dpi': '150',  # Reduzido para melhor performance
-                'image-quality': '80',  # Reduzido para melhor performance
-                'footer-line': '',
+                'dpi': '150',  # Otimizado para velocidade
+                'image-dpi': '150',  # Otimizado para velocidade
+                'image-quality': '75',  # Otimizado para velocidade
                 'quiet': '',
                 'load-error-handling': 'ignore',
                 'load-media-error-handling': 'ignore',
                 'disable-plugins': '',
                 'minimum-font-size': '12',
                 'background': '',
-                'lowquality': False,
-                'grayscale': False,
                 'orientation': 'Portrait',
-                'disable-external-links': '',  # Evitar carregamento de recursos externos
-                'disable-forms': '',  # Desabilitar formulários para melhor performance
-                'disable-javascript': '',  # Desabilitar JS para evitar timeout
-                'no-stop-slow-scripts': ''  # Não parar scripts lentos
+                'disable-javascript': '',  # Desabilitar JS para acelerar
+                'no-stop-slow-scripts': '',
+                'disable-external-links': '',
+                'disable-internal-links': ''
             }
             
-           # Gerar PDF com tratamento de exceções robusto
-try:
-    pdfkit.from_string(
-        html_relatorio,
-        pdf_path,
-        configuration=pdf_config,
-        options=options
-    )
-    logger.info(f"PDF gerado: {pdf_path}")
-except Exception as e:
-    logger.error("Falha ao gerar PDF", exc_info=True)
-    # se estiver dentro de um handler Flask, devolva um JSON de erro; por exemplo:
-    return jsonify({"error": "Erro interno ao gerar PDF. Tente novamente."}), 500
+            # Gerar PDF
+            pdfkit.from_string(html_relatorio, pdf_path, options=options)
             
             # Verificar se o arquivo foi criado e tem tamanho válido
             if os.path.exists(pdf_path) and os.path.getsize(pdf_path) > 0:
@@ -726,23 +647,25 @@ except Exception as e:
                 logger.info(f"[{timestamp}] PDF de Diagnóstico formatado conforme HTML — OK")
             else:
                 raise Exception("Arquivo PDF não foi criado ou está vazio")
-                
+            
         except Exception as e:
-            logger.error("Erro PDF/e-mail", exc_info=True)
-            return jsonify({"error": "Erro interno ao gerar PDF ou enviar e-mail"}), 500
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            logger.error(f"[{timestamp}] Erro ao gerar PDF: {e}")
+            pdf_path = None
         
         # Tentar enviar email apenas se PDF foi gerado com sucesso
         if pdf_path and os.path.exists(pdf_path) and os.path.getsize(pdf_path) > 0:
             try:
                 envio_sucesso = enviar_email(nome, email, pdf_path, pontuacao_geral)
                 if envio_sucesso:
-                    logger.info(f"E-mail enviado: {email}")
+                    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    logger.info(f"[{timestamp}] Email enviado com sucesso para {email}")
                 else:
                     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     logger.warning(f"[{timestamp}] Falha no envio de email para {email}")
             except Exception as e:
-                logger.error("Erro PDF/e-mail", exc_info=True)
-                return jsonify({"error": "Erro interno ao gerar PDF ou enviar e-mail"}), 500
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                logger.error(f"[{timestamp}] Erro ao enviar email: {e}")
         else:
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             logger.error(f"[{timestamp}] Não foi possível enviar email - PDF não gerado ou inválido")
@@ -761,23 +684,6 @@ except Exception as e:
             'success': False,
             'message': 'Erro interno do servidor'
         }), 500
-
-@app.route('/debug_report', methods=['POST'])
-def debug_report():
-    """
-    POST JSON: {'email':'seu@mail.com','dados':{…}}
-    Retorna o traceback em caso de falha.
-    """
-    data = request.get_json(force=True)
-    email = data.get('email')
-    html = render_template('relatorio_virtual.html', dados=data.get('dados', {}))
-    pdf_path = f"relatorios_temp/debug_{email.replace('@','_')}.pdf"
-    try:
-        gerar_e_enviar_relatorio(email, html, pdf_path)
-        return jsonify({"ok": True, "pdf_path": pdf_path}), 200
-    except Exception:
-        tb = traceback.format_exc()
-        return jsonify({"ok": False, "error": tb}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=9000)
