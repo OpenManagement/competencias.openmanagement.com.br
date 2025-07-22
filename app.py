@@ -122,10 +122,14 @@ def processar_pdf_e_email_async(dados):
     try:
         nome = dados['nome']
         email = dados['email']
-        html_content = dados['html_content']
+        dados_template = dados['dados_template']
         pontuacao_geral = dados['pontuacao_geral']
         
         logger.info(f"🔄 Processamento assíncrono iniciado para {nome}")
+        
+        # Gerar HTML específico para PDF (sem url_for)
+        with app.app_context():
+            html_content = render_template('relatorio_pdf_template.html', **dados_template)
         
         # Preparar arquivo PDF
         nome_arquivo = nome.replace(' ', '_').replace('/', '_').replace('\\', '_')
@@ -346,7 +350,7 @@ def submit_avaliacao():
     
     try:
         # Obter dados do formulário
-        nome = request.form.get('nome', '').strip()
+        nome = request.form.get('nome_completo', '').strip()
         email = request.form.get('email', '').strip()
         celular = request.form.get('celular', '').strip()
         
@@ -395,7 +399,7 @@ def submit_avaliacao():
             'hora_avaliacao': datetime.now().strftime('%H:%M')
         }
         
-        # Renderizar template HTML
+        # Renderizar template HTML para visualização
         template_start = time.time()
         html_relatorio = render_template('relatorio_template.html', **dados_template)
         logger.info(f"✅ Template renderizado em {time.time() - template_start:.3f}s")
@@ -404,7 +408,7 @@ def submit_avaliacao():
         dados_async = {
             'nome': nome,
             'email': email,
-            'html_content': html_relatorio,
+            'dados_template': dados_template,  # Passar dados do template em vez do HTML
             'pontuacao_geral': pontuacao_geral
         }
         
