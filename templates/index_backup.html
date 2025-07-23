@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico de Avaliação de Competências</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
+        header { background-color: #007bff; color: white; text-align: center; padding: 20px; }
+        h1, h2, h3 { color: #333; }
+        .container { max-width: 800px; margin: 20px auto; padding: 20px; background-color: white; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+        .planos { display: flex; justify-content: space-around; margin-bottom: 20px; }
+        .plano { background-color: #e9ecef; padding: 20px; border-radius: 8px; width: 45%; text-align: center; }
+        .plano h3 { margin-top: 0; }
+        .plano ul { list-style: none; padding: 0; }
+        .plano ul li { margin: 10px 0; }
+        .plano button { background-color: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+        .plano button:hover { background-color: #218838; }
+        form { margin-top: 20px; }
+        .competencia { margin-bottom: 20px; }
+        .competencia h3 { border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+        .pergunta { margin: 10px 0; }
+        .pergunta label { margin-right: 10px; }
+        input[type="text"], input[type="email"], input[type="tel"] { width: 100%; padding: 8px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; }
+        input[type="submit"] { background-color: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+        input[type="submit"]:hover { background-color: #0056b3; }
+        footer { text-align: center; margin-top: 20px; padding: 10px; background-color: #007bff; color: white; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); }
+        .modal-content { background-color: white; margin: 15% auto; padding: 20px; border-radius: 8px; width: 80%; max-width: 500px; text-align: center; }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close:hover { color: #000; }
+    </style>
+</head>
+<body>
+    <header>
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo Método Faça Bem" style="max-height: 80px; margin-bottom: 10px;">
+        <h1>Autoavaliação de Competências</h1>
+    </header>
+
+    <div class="container">
+        <section>
+            <h2>🎯 Escolha Sua Experiência</h2>
+            <div class="planos">
+                <div class="plano">
+                    <h3>🆓 VERSÃO GRATUITA</h3>
+                    <ul>
+                        <li>Avaliação completa (50 questões)</li>
+                        <li>Pontuação geral e por competência</li>
+                        <li>Ranking das competências</li>
+                        <li>Preview do plano de desenvolvimento</li>
+                    </ul>
+                    <p><strong>GRÁTIS</strong></p>
+                    <button onclick="document.getElementById('formulario').scrollIntoView()">COMEÇAR</button>
+                </div>
+                <div class="plano">
+                    <h3>💎 VERSÃO PREMIUM</h3>
+                    <ul>
+                        <li>Tudo da versão gratuita +</li>
+                        <li>Plano completo de 90 dias</li>
+                        <li>6 ações detalhadas</li>
+                        <li>Relatório PDF profissional</li>
+                        <li>Envio por e-mail</li>
+                    </ul>
+                    <p><strong>R$ 29,90</strong></p>
+                    <button onclick="document.getElementById('formulario').scrollIntoView()">COMEÇAR</button>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>PARABÉNS PELA DECISÃO!</h2>
+            <p>Você está prestes a descobrir suas competências e receber um plano personalizado de desenvolvimento. Esta avaliação analisa 5 competências fundamentais:</p>
+            <ul>
+                <li>🗣️ Comunicação: Sua capacidade de se expressar e ouvir efetivamente</li>
+                <li>📊 Organização: Como você estrutura e gerencia suas atividades</li>
+                <li>🚀 Proatividade: Sua iniciativa e antecipação de necessidades</li>
+                <li>🧠 Pensamento Crítico: Capacidade de análise e tomada de decisões</li>
+                <li>⚡ Produtividade: Eficiência na execução de tarefas e projetos</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>📏 Como Responder</h2>
+            <p>Para cada afirmação, escolha a opção que melhor descreve sua situação atual:</p>
+            <ul>
+                <li><strong>1 - Nunca:</strong> Não faço isso ou raramente acontece</li>
+                <li><strong>2 - Raramente:</strong> Faço ocasionalmente, mas não é comum</li>
+                <li><strong>3 - Às vezes:</strong> Faço com frequência moderada</li>
+                <li><strong>4 - Frequentemente:</strong> Faço na maioria das vezes</li>
+                <li><strong>5 - Sempre:</strong> Faço consistentemente, é um hábito</li>
+            </ul>
+        </section>
+
+        <section id="formulario">
+            <form action="/submit" method="POST">
+                <div>
+                    <label for="nome_completo">Nome Completo:</label>
+                    <input type="text" id="nome_completo" name="nome_completo" required>
+                </div>
+
+                <div>
+                    <label for="email">E-mail:</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div>
+                    <label for="celular">Celular (WhatsApp):</label>
+                    <input type="tel" id="celular" name="celular">
+                </div>
+
+                <div class="competencia">
+                    <h3>🗣️ Comunicação</h3>
+                    <div class="pergunta">
+                        <p>1. Escuto atentamente quando alguém está falando, sem interromper.</p>
+                        <label><input type="radio" name="c1_1" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c1_1" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c1_1" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c1_1" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c1_1" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>2. Consigo explicar ideias complexas de forma simples e clara.</p>
+                        <label><input type="radio" name="c1_2" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c1_2" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c1_2" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c1_2" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c1_2" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>3. Faço perguntas para garantir que entendi corretamente o que foi dito.</p>
+                        <label><input type="radio" name="c1_3" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c1_3" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c1_3" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c1_3" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c1_3" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>4. Adapto minha forma de comunicar dependendo de quem está ouvindo.</p>
+                        <label><input type="radio" name="c1_4" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c1_4" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c1_4" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c1_4" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c1_4" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>5. Dou feedback construtivo quando necessário.</p>
+                        <label><input type="radio" name="c1_5" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c1_5" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c1_5" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c1_5" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c1_5" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>6. Mantenho contato visual adequado durante conversas.</p>
+                        <label><input type="radio" name="c1_6" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c1_6" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c1_6" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c1_6" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c1_6" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>7. Consigo expressar minhas opiniões de forma respeitosa, mesmo em desacordos.</p>
+                        <label><input type="radio" name="c1_7" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c1_7" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c1_7" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c1_7" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c1_7" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>8. Uso linguagem corporal que reforça minha mensagem verbal.</p>
+                        <label><input type="radio" name="c1_8" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c1_8" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c1_8" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c1_8" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c1_8" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>9. Reconheço e respondo adequadamente às emoções dos outros.</p>
+                        <label><input type="radio" name="c1_9" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c1_9" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c1_9" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c1_9" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c1_9" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>10. Busco esclarecer mal-entendidos assim que os percebo.</p>
+                        <label><input type="radio" name="c1_10" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c1_10" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c1_10" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c1_10" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c1_10" value="5"> 5<br>Sempre</label>
+                    </div>
+                </div>
+
+                <div class="competencia">
+                    <h3>📊 Organização</h3>
+                    <div class="pergunta">
+                        <p>11. Mantenho meu espaço de trabalho organizado e limpo.</p>
+                        <label><input type="radio" name="c2_1" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c2_1" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c2_1" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c2_1" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c2_1" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>12. Uso listas de tarefas ou sistemas para acompanhar minhas responsabilidades.</p>
+                        <label><input type="radio" name="c2_2" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c2_2" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c2_2" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c2_2" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c2_2" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>13. Arquivo documentos e informações de forma que posso encontrá-los facilmente.</p>
+                        <label><input type="radio" name="c2_3" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c2_3" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c2_3" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c2_3" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c2_3" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>14. Estabeleço prazos realistas para minhas tarefas e projetos.</p>
+                        <label><input type="radio" name="c2_4" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c2_4" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c2_4" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c2_4" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c2_4" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>15. Reviso regularmente meus objetivos e progresso.</p>
+                        <label><input type="radio" name="c2_5" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c2_5" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c2_5" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c2_5" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c2_5" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>16. Preparo com antecedência para reuniões e compromissos importantes.</p>
+                        <label><input type="radio" name="c2_6" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c2_6" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c2_6" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c2_6" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c2_6" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>17. Mantenho um calendário atualizado com meus compromissos.</p>
+                        <label><input type="radio" name="c2_7" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c2_7" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c2_7" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c2_7" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c2_7" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>18. Divido projetos grandes em tarefas menores e mais gerenciáveis.</p>
+                        <label><input type="radio" name="c2_8" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c2_8" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c2_8" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c2_8" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c2_8" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>19. Tenho sistemas para lembrar de tarefas e compromissos importantes.</p>
+                        <label><input type="radio" name="c2_9" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c2_9" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c2_9" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c2_9" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c2_9" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>20. Mantenho backup de informações importantes.</p>
+                        <label><input type="radio" name="c2_10" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c2_10" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c2_10" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c2_10" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c2_10" value="5"> 5<br>Sempre</label>
+                    </div>
+                </div>
+
+                <div class="competencia">
+                    <h3>🚀 Proatividade</h3>
+                    <div class="pergunta">
+                        <p>21. Antecipo problemas e trabalho para preveni-los.</p>
+                        <label><input type="radio" name="c3_1" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c3_1" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c3_1" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c3_1" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c3_1" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>22. Tomo iniciativa para melhorar processos ou situações.</p>
+                        <label><input type="radio" name="c3_2" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c3_2" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c3_2" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c3_2" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c3_2" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>23. Busco oportunidades de aprendizado e crescimento.</p>
+                        <label><input type="radio" name="c3_3" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c3_3" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c3_3" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c3_3" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c3_3" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>24. Ofereço ajuda antes de ser solicitado.</p>
+                        <label><input type="radio" name="c3_4" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c3_4" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c3_4" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c3_4" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c3_4" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>25. Assumo responsabilidade pelos meus resultados, sejam positivos ou negativos.</p>
+                        <label><input type="radio" name="c3_5" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c3_5" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c3_5" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c3_5" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c3_5" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>26. Sugiro soluções quando identifico problemas.</p>
+                        <label><input type="radio" name="c3_6" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c3_6" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c3_6" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c3_6" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c3_6" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>27. Mantenho-me atualizado sobre tendências e mudanças na minha área.</p>
+                        <label><input type="radio" name="c3_7" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c3_7" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c3_7" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c3_7" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c3_7" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>28. Estabeleço metas pessoais e trabalho ativamente para alcançá-las.</p>
+                        <label><input type="radio" name="c3_8" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c3_8" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c3_8" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c3_8" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c3_8" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>29. Busco feedback para melhorar meu desempenho.</p>
+                        <label><input type="radio" name="c3_9" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c3_9" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c3_9" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c3_9" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c3_9" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>30. Ajo com base em minhas convicções, mesmo quando é difícil.</p>
+                        <label><input type="radio" name="c3_10" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c3_10" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c3_10" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c3_10" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c3_10" value="5"> 5<br>Sempre</label>
+                    </div>
+                </div>
+
+                <div class="competencia">
+                    <h3>🧠 Pensamento Crítico</h3>
+                    <div class="pergunta">
+                        <p>31. Questiono informações antes de aceitá-las como verdadeiras.</p>
+                        <label><input type="radio" name="c4_1" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c4_1" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c4_1" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c4_1" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c4_1" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>32. Analiso diferentes perspectivas antes de formar uma opinião.</p>
+                        <label><input type="radio" name="c4_2" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c4_2" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c4_2" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c4_2" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c4_2" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>33. Identifico e questiono minhas próprias suposições.</p>
+                        <label><input type="radio" name="c4_3" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c4_3" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c4_3" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c4_3" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c4_3" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>34. Busco evidências para apoiar minhas conclusões.</p>
+                        <label><input type="radio" name="c4_4" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c4_4" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c4_4" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c4_4" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c4_4" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>35. Considero as consequências de longo prazo das minhas decisões.</p>
+                        <label><input type="radio" name="c4_5" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c4_5" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c4_5" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c4_5" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c4_5" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>36. Reconheço quando não tenho informações suficientes para decidir.</p>
+                        <label><input type="radio" name="c4_6" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c4_6" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c4_6" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c4_6" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c4_6" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>37. Avalio a credibilidade das fontes de informação.</p>
+                        <label><input type="radio" name="c4_7" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c4_7" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c4_7" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c4_7" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c4_7" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>38. Estou disposto a mudar de opinião quando apresentado com evidências contrárias.</p>
+                        <label><input type="radio" name="c4_8" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c4_8" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c4_8" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c4_8" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c4_8" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>39. Identifico padrões e conexões entre diferentes informações.</p>
+                        <label><input type="radio" name="c4_9" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c4_9" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c4_9" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c4_9" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c4_9" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>40. Reflito sobre meus processos de pensamento e decisão.</p>
+                        <label><input type="radio" name="c4_10" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c4_10" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c4_10" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c4_10" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c4_10" value="5"> 5<br>Sempre</label>
+                    </div>
+                </div>
+
+                <div class="competencia">
+                    <h3>⚡ Produtividade</h3>
+                    <div class="pergunta">
+                        <p>41. Priorizo tarefas baseado em sua importância e urgência.</p>
+                        <label><input type="radio" name="c5_1" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c5_1" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c5_1" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c5_1" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c5_1" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>42. Elimino ou delego tarefas que não agregam valor significativo.</p>
+                        <label><input type="radio" name="c5_2" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c5_2" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c5_2" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c5_2" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c5_2" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>43. Uso técnicas para manter o foco e evitar distrações.</p>
+                        <label><input type="radio" name="c5_3" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c5_3" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c5_3" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c5_3" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c5_3" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>44. Estabeleço metas específicas e mensuráveis para meus projetos.</p>
+                        <label><input type="radio" name="c5_4" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c5_4" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c5_4" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c5_4" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c5_4" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>45. Monitoro meu progresso regularmente e faço ajustes quando necessário.</p>
+                        <label><input type="radio" name="c5_5" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c5_5" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c5_5" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c5_5" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c5_5" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>46. Uso ferramentas e tecnologias para automatizar tarefas repetitivas.</p>
+                        <label><input type="radio" name="c5_6" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c5_6" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c5_6" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c5_6" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c5_6" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>47. Mantenho um equilíbrio saudável entre trabalho e descanso.</p>
+                        <label><input type="radio" name="c5_7" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c5_7" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c5_7" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c5_7" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c5_7" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>48. Aprendo com meus erros e implemento melhorias nos meus processos.</p>
+                        <label><input type="radio" name="c5_8" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c5_8" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c5_8" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c5_8" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c5_8" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>49. Celebro conquistas e marcos importantes nos meus projetos.</p>
+                        <label><input type="radio" name="c5_9" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c5_9" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c5_9" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c5_9" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c5_9" value="5"> 5<br>Sempre</label>
+                    </div>
+                    <div class="pergunta">
+                        <p>50. Mantenho-me motivado mesmo quando enfrento desafios ou obstáculos.</p>
+                        <label><input type="radio" name="c5_10" value="1" required> 1<br>Nunca</label>
+                        <label><input type="radio" name="c5_10" value="2"> 2<br>Raramente</label>
+                        <label><input type="radio" name="c5_10" value="3"> 3<br>Às vezes</label>
+                        <label><input type="radio" name="c5_10" value="4"> 4<br>Frequentemente</label>
+                        <label><input type="radio" name="c5_10" value="5"> 5<br>Sempre</label>
+                    </div>
+                </div>
+
+                <input type="submit" value="🎯 Gerar Meu Diagnóstico de Competências">
+            </form>
+        </section>
+
+        <footer>
+            <p>@adrianadacruz_ | @faca.bem</p>
+            <p>Todos os direitos reservados</p>
+        </footer>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="document.getElementById('modal').style.display='none'">&times;</span>
+            <p id="modal-message"></p>
+        </div>
+    </div>
+
+    <script>
+        document.querySelector('form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            fetch('/submit', {
+                method: 'POST',
+                body: new FormData(this)
+            })
+            .then(response => response.json())
+            .then(data => {
+                const modal = document.getElementById('modal');
+                const modalMessage = document.getElementById('modal-message');
+                modalMessage.textContent = data.message;
+                modal.style.display = 'block';
+            })
+            .catch(error => {
+                const modal = document.getElementById('modal');
+                const modalMessage = document.getElementById('modal-message');
+                modalMessage.textContent = 'Erro ao enviar formulário: ' + error.message;
+                modal.style.display = 'block';
+            });
+        });
+    </script>
+</body>
+</html>
