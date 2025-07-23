@@ -469,3 +469,10 @@ if __name__ == '__main__':
     logger.info(f"🚀 Iniciando servidor FINAL DEFINITIVO na porta {port}")
     app.run(host='0.0.0.0', port=port, debug=False, threaded=True)
 
+
+import os
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
+
