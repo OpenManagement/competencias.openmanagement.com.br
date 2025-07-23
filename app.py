@@ -23,6 +23,11 @@ load_dotenv()
 
 app = Flask(__name__)
 
+# Health check endpoint para Railway
+@app.route('/health')
+def health():
+    return {"status": "saudável"}, 200
+
 # Configuração de logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
