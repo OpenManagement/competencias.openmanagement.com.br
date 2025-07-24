@@ -23,11 +23,6 @@ load_dotenv()
 
 app = Flask(__name__)
 
-# Health check endpoint para Railway
-@app.route('/health')
-def health():
-    return {"status": "saudável"}, 200
-
 # Configuração de logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -172,20 +167,20 @@ def calcular_competencias_individuais(respostas):
     """Calcula pontuação das 50 competências individuais"""
     competencias = {}
     
-    # Mapeamento das competências (10 perguntas cada) - formato correto
+    # Mapeamento das competências (10 perguntas cada)
     mapeamento = {
-        'Comunicação': ['c1_q1', 'c1_q2', 'c1_q3', 'c1_q4', 'c1_q5', 'c1_q6', 'c1_q7', 'c1_q8', 'c1_q9', 'c1_q10'],
-        'Organização': ['c2_q1', 'c2_q2', 'c2_q3', 'c2_q4', 'c2_q5', 'c2_q6', 'c2_q7', 'c2_q8', 'c2_q9', 'c2_q10'], 
-        'Proatividade': ['c3_q1', 'c3_q2', 'c3_q3', 'c3_q4', 'c3_q5', 'c3_q6', 'c3_q7', 'c3_q8', 'c3_q9', 'c3_q10'],
-        'Pensamento Crítico': ['c4_q1', 'c4_q2', 'c4_q3', 'c4_q4', 'c4_q5', 'c4_q6', 'c4_q7', 'c4_q8', 'c4_q9', 'c4_q10'],
-        'Produtividade': ['c5_q1', 'c5_q2', 'c5_q3', 'c5_q4', 'c5_q5', 'c5_q6', 'c5_q7', 'c5_q8', 'c5_q9', 'c5_q10']
+        'Comunicação': list(range(1, 11)),
+        'Organização': list(range(11, 21)), 
+        'Proatividade': list(range(21, 31)),
+        'Pensamento Crítico': list(range(31, 41)),
+        'Produtividade': list(range(41, 51))
     }
     
     for competencia, perguntas in mapeamento.items():
         pontuacoes = []
         for pergunta in perguntas:
-            if pergunta in respostas:
-                pontuacoes.append(int(respostas[pergunta]))
+            if f'pergunta_{pergunta}' in respostas:
+                pontuacoes.append(int(respostas[f'pergunta_{pergunta}']))
         
         if pontuacoes:
             media = sum(pontuacoes) / len(pontuacoes)
@@ -362,16 +357,12 @@ def submit_avaliacao():
         if not nome or not email:
             return jsonify({'success': False, 'message': 'Nome e email são obrigatórios'})
         
-        # Obter respostas das 50 perguntas (formato correto: c1_q1, c1_q2, etc.)
+        # Obter respostas das 50 perguntas
         respostas = {}
-        competencias = ['c1', 'c2', 'c3', 'c4', 'c5']
-        
-        for comp in competencias:
-            for q in range(1, 11):  # 10 perguntas por competência
-                campo_nome = f'{comp}_q{q}'
-                resposta = request.form.get(campo_nome)
-                if resposta:
-                    respostas[campo_nome] = int(resposta)
+        for i in range(1, 51):
+            resposta = request.form.get(f'pergunta_{i}')
+            if resposta:
+                respostas[f'pergunta_{i}'] = int(resposta)
         
         if len(respostas) < 50:
             return jsonify({'success': False, 'message': 'Todas as 50 perguntas devem ser respondidas'})
@@ -447,43 +438,8 @@ def submit_avaliacao():
             'erro_tempo': f"{tempo_erro:.3f}s"
         }), 500
 
-@app.route('/checkout', methods=['GET', 'POST'])
+@app.route('/checkout')
 def checkout():
-    if request.method == 'POST':
-        try:
-            # Criar preferência de pagamento no Mercado Pago
-            preference_data = {
-                "items": [
-                    {
-                        "title": "Avaliação de Competências Premium",
-                        "quantity": 1,
-                        "unit_price": 29.90,
-                        "currency_id": "BRL"
-                    }
-                ],
-                "back_urls": {
-                    "success": url_for('pagamento_sucesso', _external=True),
-                    "failure": url_for('pagamento_falha', _external=True),
-                    "pending": url_for('pagamento_pendente', _external=True)
-                },
-                "auto_return": "approved"
-            }
-            
-            preference_response = mp.preference().create(preference_data)
-            
-            if preference_response["status"] == 201:
-                return jsonify({
-                    'success': True,
-                    'init_point': preference_response["response"]["init_point"]
-                })
-            else:
-                logger.error(f"Erro ao criar preferência: {preference_response}")
-                return jsonify({'success': False, 'message': 'Erro ao processar pagamento'}), 500
-                
-        except Exception as e:
-            logger.error(f"Erro no checkout: {e}")
-            return jsonify({'success': False, 'message': 'Erro interno do servidor'}), 500
-    
     return render_template('checkout.html')
 
 @app.route('/pagamento_sucesso')
@@ -512,11 +468,4 @@ if __name__ == '__main__':
     port = int(os.environ.get('PORT', 9000))
     logger.info(f"🚀 Iniciando servidor FINAL DEFINITIVO na porta {port}")
     app.run(host='0.0.0.0', port=port, debug=False, threaded=True)
-
-
-import os
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
 
