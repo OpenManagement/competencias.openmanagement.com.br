@@ -396,6 +396,16 @@ consultoria@openmanagement.com.br"""
 def index():
     return render_template('index.html')
 
+@app.route('/checkout')
+def checkout_page():
+    """Página de checkout"""
+    return render_template('checkout.html', 
+                         preco=29.90, 
+                         nome="", 
+                         email="",
+                         public_key=PUBLIC_KEY,
+                         preference_id="")
+
 @app.route('/checkout', methods=['POST'])
 def checkout():
     """Cria preferência de pagamento no Mercado Pago"""
@@ -588,9 +598,19 @@ def submit_avaliacao():
         import re
         # Usar caminhos absolutos locais para recursos estáticos
         current_dir = os.path.abspath('.')
+        static_dir = os.path.join(current_dir, 'static')
+        
+        # Substituir referências de imagens para caminhos absolutos
         html_relatorio = re.sub(
             r'src="/static/([^"]*)"',
-            lambda m: f'src="file://{current_dir}/static/{m.group(1)}"',
+            lambda m: f'src="file://{static_dir}/{m.group(1)}"',
+            html_relatorio
+        )
+        
+        # Substituir url_for para static files
+        html_relatorio = re.sub(
+            r"url_for\('static', filename='([^']*)'\)",
+            lambda m: f'"file://{static_dir}/{m.group(1)}"',
             html_relatorio
         )
         
@@ -607,7 +627,7 @@ def submit_avaliacao():
             
             pdf_path = os.path.join(reports_dir, pdf_filename)
             
-            # Opções otimizadas para geração do PDF
+            # Opções otimizadas para geração do PDF idêntica ao relatório virtual
             options = {
                 'page-size': 'A4',
                 'margin-top': '0.75in',
@@ -621,9 +641,9 @@ def submit_avaliacao():
                 'print-media-type': '',
                 'images': '',
                 'zoom': '1.0',
-                'dpi': '150',  # Otimizado para velocidade
-                'image-dpi': '150',  # Otimizado para velocidade
-                'image-quality': '75',  # Otimizado para velocidade
+                'dpi': '300',  # Alta qualidade para PDF profissional
+                'image-dpi': '300',  # Alta qualidade para imagens
+                'image-quality': '100',  # Máxima qualidade de imagem
                 'quiet': '',
                 'load-error-handling': 'ignore',
                 'load-media-error-handling': 'ignore',
@@ -631,10 +651,14 @@ def submit_avaliacao():
                 'minimum-font-size': '12',
                 'background': '',
                 'orientation': 'Portrait',
-                'disable-javascript': '',  # Desabilitar JS para acelerar
+                'disable-javascript': '',
                 'no-stop-slow-scripts': '',
                 'disable-external-links': '',
-                'disable-internal-links': ''
+                'disable-internal-links': '',
+                'enable-forms': '',
+                'lowquality': False,  # Garantir alta qualidade
+                'grayscale': False,   # Manter cores
+                'cookie-jar': ''
             }
             
             # Gerar PDF
@@ -686,5 +710,6 @@ def submit_avaliacao():
         }), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=9000)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(debug=False, host='0.0.0.0', port=port)
 
