@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Relatório de Competências - {{ nome }}</title>
+    <title>Diagnóstico de Avaliação de Competências - {{ nome }}</title>
     <style>
         * {
             margin: 0;
@@ -359,6 +359,85 @@
             font-style: italic;
         }
         
+        /* Introdução do Diagnóstico */
+        .introducao-diagnostico {
+            background: #f8f9fa;
+            border-left: 5px solid #4CAF50;
+            padding: 30px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        
+        .introducao-diagnostico p {
+            font-size: 1.1em;
+            line-height: 1.8;
+            color: #555;
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+        
+        /* Competências a desenvolver */
+        .competencias-desenvolver {
+            background: #fff3e0;
+            border: 2px solid #ff9800;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .competencias-desenvolver p {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+        
+        /* Plano de Desenvolvimento */
+        .plano-competencia {
+            margin: 30px 0;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 5px solid #4CAF50;
+        }
+        
+        .plano-competencia h4 {
+            color: #4CAF50;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+        
+        .tabela-acoes table {
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+        
+        .tabela-acoes th {
+            font-weight: bold;
+            font-size: 0.95em;
+        }
+        
+        .tabela-acoes td {
+            font-size: 0.85em;
+        }
+        
+        /* Preview Box */
+        .preview-plano {
+            margin: 30px 0;
+        }
+        
+        .preview-box {
+            background: #fff3e0;
+            border: 2px solid #ff9800;
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .preview-box p {
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
         /* Responsividade */
         @media (max-width: 768px) {
             .container {
@@ -391,16 +470,96 @@
             body {
                 background: white;
                 padding: 0;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+                line-height: 1.6 !important;
+                color: #333 !important;
             }
             
             .container {
                 box-shadow: none;
                 border-radius: 0;
+                max-width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            
+            .header {
+                background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%) !important;
+                color: white !important;
+                padding: 30px !important;
+                text-align: center !important;
+            }
+            
+            .logo {
+                width: 80px !important;
+                height: 80px !important;
+                margin: 0 auto 20px !important;
+                background: white !important;
+                border-radius: 50% !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+            
+            .logo img {
+                width: 60px !important;
+                height: 60px !important;
+                object-fit: contain !important;
             }
             
             .competencia-item:hover {
                 transform: none;
                 box-shadow: none;
+            }
+            
+            .likert-bar {
+                width: 200px !important;
+                height: 20px !important;
+                background: #e0e0e0 !important;
+                border-radius: 10px !important;
+                overflow: hidden !important;
+            }
+            
+            .likert-fill {
+                background: linear-gradient(90deg, #ff4444 0%, #ffaa00 25%, #ffdd00 50%, #88dd00 75%, #44aa00 100%) !important;
+                border-radius: 10px !important;
+            }
+            
+            .pontuacao-geral {
+                background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%) !important;
+                color: white !important;
+            }
+            
+            .encerramento {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                color: white !important;
+            }
+            
+            .rodape {
+                background: #333 !important;
+                color: white !important;
+            }
+            
+            .rodape .contato {
+                color: #4CAF50 !important;
+            }
+            
+            .rodape .suporte-prioritario {
+                color: #4CAF50 !important;
+            }
+            
+            h1, h2, h3, h4, h5, h6 {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+                color: inherit !important;
+            }
+            
+            table, th, td {
+                border: 1px solid #ddd !important;
+            }
+            
+            th {
+                background: #4CAF50 !important;
+                color: white !important;
             }
         }
     </style>
@@ -410,9 +569,9 @@
         <!-- Header com Logo -->
         <div class="header">
             <div class="logo">
-                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo Método Faça Bem">
+                <img src="{{ url_for('static', filename='img/logo_nova_semfundo.png') }}" alt="Logo Método Faça Bem">
             </div>
-            <h1>📊 Relatório de Competências</h1>
+            <h1>📊 Diagnóstico de Avaliação de Competências</h1>
             <div class="subtitle">Autoavaliação Personalizada</div>
         </div>
         
@@ -490,9 +649,82 @@
             {% endfor %}
         </div>
         
-        <!-- Diagnóstico e Plano de Desenvolvimento -->
+        <!-- Seu Diagnóstico e Plano de Desenvolvimento -->
         <div class="secao">
-            <h2>🎯 Diagnóstico e Plano de Desenvolvimento</h2>
+            <h2>🎯 Seu Diagnóstico e Plano de Desenvolvimento</h2>
+            
+            <!-- Introdução Padrão -->
+            <div class="introducao-diagnostico">
+                <p>Você está prestes a iniciar um Plano de Desenvolvimento de Competências para que em alguns meses você transforme conceitos e técnicas sobre desempenho humano em hábitos diários de fácil aplicação. O plano foca em cinco competências essenciais — Comunicação, Organização, Proatividade, Pensamento Crítico e Produtividade — porque elas funcionam como engrenagens interligadas: quando uma evolui, todas as outras ganham impulso. Mas, a partir do seu diagnóstico vamos priorizar as competências que você precisa melhorar e desenvolver. Cada tarefa sugerida foi desenhada para caber na rotina de quem tem pouco tempo, mas deseja avanço consistente nas áreas profissional, familiar e pessoal.</p>
+                
+                <p>O plano deve ser executado em três meses. Esperamos que ao final de 90 dias, você tenha adquirido avanços substanciais que vão te tornar uma pessoa que executa bem suas ações, e será reconhecida por isso.</p>
+                
+                <p>O objetivo desse plano é que você tenha consciência da sua necessidade de crescimento e te provar que você pode desenvolver suas competências de forma consistente com pequenas ações. Basta seguir a instrução do dia, entender seu propósito e registrar o progresso. O formato segue uma lógica simples e pragmática. Toda linha da tabela apresenta: (1) Ação — o que fazer, (2) O que é — explicação sobre o que você precisa fazer, (3) Por que fazer — benefício motivador, (4) Como fazer — passo a passo objetivo e (5) Meta em dias — indicador de sucesso mensurável.</p>
+                
+                <p>Para garantir adesão e resultado, eu te recomendo três práticas-chave:</p>
+                <p>1. Integre as ações ao seu calendário — bloqueie horários, como faria com compromissos de trabalho.</p>
+                <p>2. Use um quadro de acompanhamento (físico ou aplicativo) — visualizar "checks" diários reforça a continuidade e o hábito.</p>
+                <p>3. Encontre um parceiro de responsabilidade — encontre uma pessoa para dividir o seu progresso. Revisões semanais de 15 minutos aumentam muito a chance de conclusão do seu plano. E não deixe de compartilhar seus resultados comigo no @adrianadacruz_.</p>
+                
+                <p><strong>E tudo o que fizer, faça bem!</strong></p>
+            </div>
+            
+            <!-- Competências a desenvolver -->
+            <h3><strong>Competências a desenvolver</strong></h3>
+            
+            <!-- Listagem das 3 piores competências -->
+            <div class="competencias-desenvolver">
+                {% for comp in competencias_desenvolver %}
+                <p><strong>{{ comp.nome }}:</strong> {{ "%.2f"|format(comp.media) }}/5</p>
+                {% endfor %}
+            </div>
+            
+            <!-- Plano de Desenvolvimento (versão completa ou preview) -->
+            {% if versao == 'premium' %}
+                <!-- Versão Premium: Plano completo para as 3 competências -->
+                {% for comp in plano_desenvolvimento %}
+                <div class="plano-competencia">
+                    <h4>📋 Plano de Desenvolvimento: {{ comp.nome }}</h4>
+                    
+                    <div class="tabela-acoes">
+                        <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                            <thead>
+                                <tr style="background: #4CAF50; color: white;">
+                                    <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">Ação (O que fazer)</th>
+                                    <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">O que é</th>
+                                    <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">Por que fazer</th>
+                                    <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">Como fazer</th>
+                                    <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">Meta em 90 dias</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for acao in comp.acoes %}
+                                <tr>
+                                    <td style="padding: 12px; border: 1px solid #ddd; vertical-align: top;"><strong>{{ acao.acao }}</strong></td>
+                                    <td style="padding: 12px; border: 1px solid #ddd; vertical-align: top;">{{ acao.o_que_e }}</td>
+                                    <td style="padding: 12px; border: 1px solid #ddd; vertical-align: top;">{{ acao.por_que_fazer }}</td>
+                                    <td style="padding: 12px; border: 1px solid #ddd; vertical-align: top;">{{ acao.como_fazer }}</td>
+                                    <td style="padding: 12px; border: 1px solid #ddd; vertical-align: top;">{{ acao.meta_90_dias }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <!-- Versão Gratuita: Preview apenas da primeira competência -->
+                {% if competencias_desenvolver %}
+                <div class="preview-plano">
+                    <h4>📋 Preview do Plano de Desenvolvimento: {{ competencias_desenvolver[0].nome }}</h4>
+                    <div class="preview-box" style="background: #fff3e0; border: 2px solid #ff9800; border-radius: 10px; padding: 25px; text-align: center; margin: 20px 0;">
+                        <p><strong>🔒 Conteúdo Premium</strong></p>
+                        <p>O plano completo de desenvolvimento com 3 ações detalhadas para cada competência está disponível na versão Premium.</p>
+                        <p>Upgrade para acessar o plano completo de desenvolvimento personalizado!</p>
+                    </div>
+                </div>
+                {% endif %}
+            {% endif %}
             
             <div class="diagnostico-grid">
                 <div class="diagnostico-box">
@@ -586,12 +818,20 @@
             <p>O desenvolvimento de competências é um processo contínuo e recompensador. Esse processo vai convencer que pequenos hábitos aplicados com consistência geram grandes resultados com o tempo. Parabéns por dar este primeiro passo. Você já está à frente por escolher se conhecer melhor, <strong>FAZER MELHOR</strong> e evoluir com <strong>CONSCIÊNCIA</strong>.</p>
             
             <p>Nesse processo, o <strong>Método Faça Bem</strong> te dará todas as estratégias e técnicas para chegar no melhor resultado.</p>
+            
+            <p>Acesse o link e registre-se na lista de espera: <a href="https://forms.office.com/r/SH8EibU8Tk" target="_blank">https://forms.office.com/r/SH8EibU8Tk</a></p>
         </div>
         
         <!-- Rodapé -->
         <div class="rodape">
             <p class="direitos">Todos os direitos reservados</p>
-            <p class="contato">Para dúvidas ou suporte: consultoria@openmanagement.com.br</p>
+            <p class="contato">E-mail de dúvidas: consultoria@openmanagement.com.br</p>
+            <p class="contato">E-mail de suporte: suporte@openmanagement.com.br</p>
+            {% if versao == 'premium' %}
+            <p class="suporte-prioritario" style="color: #4CAF50; font-weight: bold; margin: 15px 0;">
+                ⭐ Suporte Prioritário Premium - Resposta em até 24h
+            </p>
+            {% endif %}
             <p class="data-geracao">Este relatório foi gerado automaticamente em {{ data_avaliacao }}</p>
         </div>
     </div>

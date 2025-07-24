@@ -8,8 +8,17 @@ from email.mime.base import MIMEBase
 from email import encoders
 import pdfkit
 import os
+import mercadopago
+from tabela_referencia_competencias import COMPETENCIAS_ACOES
 
 app = Flask(__name__)
+
+# Configuração do Mercado Pago via variáveis de ambiente
+mp = mercadopago.SDK(os.getenv("MP_ACCESS_TOKEN"))
+PUBLIC_KEY = os.getenv("MP_PUBLIC_KEY")
+CLIENT_ID = os.getenv("MP_CLIENT_ID")
+CLIENT_SECRET = os.getenv("MP_CLIENT_SECRET")
+
 
 # Configuração de logging
 logging.basicConfig(
@@ -197,6 +206,52 @@ def identificar_subcompetencias_destaque(ranking_50):
     
     return top_subcompetencias, bottom_subcompetencias
 
+def identificar_competencias_desenvolver(ranking_principais):
+    """Identifica as 3 competências com menores pontuações para desenvolvimento"""
+    # Pegar as 3 últimas (menores pontuações) e ordenar por pontuação crescente
+    competencias_desenvolver = ranking_principais[-3:]
+    competencias_desenvolver.reverse()  # Do menor para o maior
+    return competencias_desenvolver
+
+def mapear_nome_competencia_para_chave(nome_competencia):
+    """Mapeia nome da competência para chave usada na tabela de referência"""
+    mapeamento = {
+        'Comunicação': 'comunicacao',
+        'Organização': 'organizacao', 
+        'Proatividade': 'proatividade',
+        'Pensamento Crítico': 'pensamento_critico',
+        'Produtividade': 'produtividade'
+    }
+    return mapeamento.get(nome_competencia, nome_competencia.lower())
+
+def gerar_plano_desenvolvimento(competencias_desenvolver, versao='gratuita'):
+    """Gera plano de desenvolvimento baseado nas competências a desenvolver"""
+    plano = []
+    
+    # Para versão gratuita, retorna apenas preview
+    if versao == 'gratuita':
+        return plano
+    
+    # Para versão premium, gera plano completo
+    for comp in competencias_desenvolver:
+        chave_competencia = mapear_nome_competencia_para_chave(comp['nome'])
+        
+        if chave_competencia in COMPETENCIAS_ACOES:
+            acoes_competencia = COMPETENCIAS_ACOES[chave_competencia]
+            
+            # Pegar as 3 ações dos graus 1, 2 e 3
+            acoes_plano = []
+            for grau in ['grau_1', 'grau_2', 'grau_3']:
+                if grau in acoes_competencia:
+                    acoes_plano.extend(acoes_competencia[grau])
+            
+            plano.append({
+                'nome': comp['nome'],
+                'acoes': acoes_plano
+            })
+    
+    return plano
+
 def gerar_corpo_email(nome, pontuacao_geral):
     """Gera o corpo do email personalizado"""
     return f"""Olá {nome}!
@@ -225,11 +280,11 @@ def enviar_email(nome, email_destino, pdf_path, pontuacao_geral):
     """Envia email com relatório em anexo usando configurações SMTP Zoho"""
     try:
         # Configurações do SMTP Zoho Mail - Exatamente conforme especificado
-        smtp_server = "smtppro.zoho.com"
-        smtp_port = 465  # SSL
-        email_usuario = "consultoria@openmanagement.com.br"
-        email_senha = "Dril2001*#2001*#"  # Senha do app Zoho Mail corrigida
-        email_interno = "consultoria@openmanagement.com.br"
+        smtp_server = os.getenv("MAIL_SERVER")
+        smtp_port = int(os.getenv("MAIL_PORT", 465))  # Default: 465
+        email_usuario = os.getenv("MAIL_USERNAME")
+        email_senha = os.getenv("MAIL_PASSWORD")
+        email_interno = os.getenv("MAIL_USERNAME")
         
         # Verificar se o arquivo PDF existe antes de prosseguir
         if not pdf_path or not os.path.exists(pdf_path):
@@ -343,6 +398,7 @@ def submit_avaliacao():
         nome = request.form.get('nome_completo', '').strip()
         email = request.form.get('email', '').strip()
         celular = request.form.get('celular', '').strip()
+        tipo_experiencia = request.form.get('tipo_experiencia', 'gratuita').strip()
         
         # Validar dados obrigatórios
         if not nome or not email:
@@ -375,6 +431,15 @@ def submit_avaliacao():
         pontos_fortes, oportunidades = identificar_pontos_fortes_e_oportunidades(ranking_principais)
         top_subcompetencias, bottom_subcompetencias = identificar_subcompetencias_destaque(ranking_50_competencias)
         
+        # Identificar competências a desenvolver (3 piores)
+        competencias_desenvolver = identificar_competencias_desenvolver(ranking_principais)
+        
+        # Determinar versão baseada na escolha do usuário
+        versao = tipo_experiencia if tipo_experiencia in ['gratuita', 'premium'] else 'gratuita'
+        
+        # Gerar plano de desenvolvimento
+        plano_desenvolvimento = gerar_plano_desenvolvimento(competencias_desenvolver, versao)
+        
         # Preparar dados para o template
         data_avaliacao = datetime.now().strftime('%d/%m/%Y')
         
@@ -389,7 +454,10 @@ def submit_avaliacao():
             'pontos_fortes': pontos_fortes,
             'oportunidades': oportunidades,
             'top_subcompetencias': top_subcompetencias,
-            'bottom_subcompetencias': bottom_subcompetencias
+            'bottom_subcompetencias': bottom_subcompetencias,
+            'competencias_desenvolver': competencias_desenvolver,
+            'plano_desenvolvimento': plano_desenvolvimento,
+            'versao': versao
         }
         
         # Gerar HTML do relatório
@@ -419,7 +487,18 @@ def submit_avaliacao():
                 'no-outline': None,
                 'enable-local-file-access': None,
                 'disable-smart-shrinking': '',
-                'print-media-type': ''
+                'print-media-type': '',
+                'enable-javascript': '',
+                'javascript-delay': '1000',
+                'images': '',
+                'enable-external-links': '',
+                'enable-internal-links': '',
+                'zoom': '1.0',
+                'dpi': '300',
+                'image-dpi': '300',
+                'image-quality': '100',
+                'footer-line': '',
+                'quiet': ''
             }
             
             # Gerar PDF
@@ -429,6 +508,7 @@ def submit_avaliacao():
             if os.path.exists(pdf_path) and os.path.getsize(pdf_path) > 0:
                 timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 logger.info(f"[{timestamp}] PDF gerado com sucesso: {pdf_path} ({os.path.getsize(pdf_path)} bytes)")
+                logger.info(f"[{timestamp}] PDF de Diagnóstico formatado conforme HTML — OK")
             else:
                 raise Exception("Arquivo PDF não foi criado ou está vazio")
             
