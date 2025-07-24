@@ -6,17 +6,10 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
-import platform, os, pdfkit
+import pdfkit
+import os
 import mercadopago
 from tabela_referencia_competencias import COMPETENCIAS_ACOES
-
-# Configuração do wkhtmltopdf
-if platform.system().lower() == 'windows':
-    WKHTMLTOPDF_PATH = r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe"
-else:
-    WKHTMLTOPDF_PATH = "/usr/bin/wkhtmltopdf"
-
-pdf_config = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_PATH)
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
@@ -596,8 +589,22 @@ def submit_avaliacao():
             html_relatorio
         )
         
-        # Remover apenas scripts que podem causar timeout, preservar CSS
+        # Simplificar HTML para PDF - remover scripts e elementos que podem causar timeout
         html_relatorio = re.sub(r'<script[^>]*>.*?</script>', '', html_relatorio, flags=re.DOTALL)
+        html_relatorio = re.sub(r'<link[^>]*rel=["\']stylesheet["\'][^>]*>', '', html_relatorio)
+        html_relatorio = re.sub(r'@import[^;]*;', '', html_relatorio)
+        
+        # Adicionar estilos inline básicos para manter formatação
+        html_relatorio = html_relatorio.replace('<head>', '''<head>
+        <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .section { margin-bottom: 20px; }
+        .competencia { margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; }
+        .score { font-weight: bold; color: #2c5aa0; }
+        .chart { margin: 20px 0; }
+        </style>''')
         
         
         # Gerar PDF e salvar em pasta acessível
@@ -647,12 +654,7 @@ def submit_avaliacao():
             }
             
             # Gerar PDF com tratamento de exceções robusto
-            pdfkit.from_string(
-                html_relatorio,
-                pdf_path,
-                configuration=pdf_config,
-                options=options
-            )
+            pdfkit.from_string(html_relatorio, pdf_path, options=options)
             logger.info(f"PDF gerado: {pdf_path}")
             
             # Verificar se o arquivo foi criado e tem tamanho válido
