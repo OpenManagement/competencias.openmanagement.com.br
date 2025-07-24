@@ -1,0 +1,289 @@
+2025-06-27 11:42:18,034 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.15.159:5000
+2025-06-27 11:42:18,035 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-27 11:42:30,727 - INFO - Requisição de 127.0.0.1 para http://localhost:5000/
+2025-06-27 11:42:30,817 - INFO - 127.0.0.1 - - [27/Jun/2025 11:42:30] "GET / HTTP/1.1" 200 -
+2025-06-27 11:44:24,012 - INFO - Requisição de 127.0.0.1 para http://localhost:5000/submit
+2025-06-27 11:44:24,016 - WARNING - Valor inválido para nome_completo: Tom da Cruz
+2025-06-27 11:44:24,016 - WARNING - Valor inválido para email: washington.a.dacruz@gmail.com
+2025-06-27 11:44:29,845 - INFO - Email enviado com sucesso para washington.a.dacruz@gmail.com, consultoria@openmanagement.com.br com anexo: relatorio_competencias_Tom_da_Cruz.pdf
+2025-06-27 11:44:29,846 - INFO - 127.0.0.1 - - [27/Jun/2025 11:44:29] "POST /submit HTTP/1.1" 200 -
+2025-06-27 11:50:02,441 - INFO - Requisição de 127.0.0.1 para http://localhost:5000/
+2025-06-27 11:50:02,448 - INFO - 127.0.0.1 - - [27/Jun/2025 11:50:02] "GET / HTTP/1.1" 200 -
+2025-06-27 11:50:08,983 - INFO - Requisição de 127.0.0.1 para http://localhost:5000/
+2025-06-27 11:50:08,983 - INFO - 127.0.0.1 - - [27/Jun/2025 11:50:08] "GET / HTTP/1.1" 200 -
+2025-06-27 11:50:23,001 - INFO - Requisição de 127.0.0.1 para http://127.0.0.1:5000/
+2025-06-27 11:50:23,001 - INFO - 127.0.0.1 - - [27/Jun/2025 11:50:23] "GET / HTTP/1.1" 200 -
+2025-06-27 11:53:36,721 - INFO - Requisição de 127.0.0.1 para http://127.0.0.1:5000/submit
+2025-06-27 11:53:36,727 - WARNING - Valor inválido para nome_completo: Adriana Cruz
+2025-06-27 11:53:36,728 - WARNING - Valor inválido para email: drilcruz@yahoo.com.br
+2025-06-27 11:53:42,284 - INFO - Email enviado com sucesso para drilcruz@yahoo.com.br, consultoria@openmanagement.com.br com anexo: relatorio_competencias_Adriana_Cruz.pdf
+2025-06-27 11:53:42,295 - INFO - 127.0.0.1 - - [27/Jun/2025 11:53:42] "POST /submit HTTP/1.1" 200 -
+2025-06-30 09:19:31,865 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.15.159:5000
+2025-06-30 09:19:31,865 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-30 09:19:37,495 - INFO - Requisição de 127.0.0.1 para http://localhost:5000/
+2025-06-30 09:19:37,550 - INFO - 127.0.0.1 - - [30/Jun/2025 09:19:37] "GET / HTTP/1.1" 200 -
+2025-06-30 09:21:39,660 - INFO - Requisição de 127.0.0.1 para http://localhost:5000/submit
+2025-06-30 09:21:39,660 - WARNING - Valor inválido para nome_completo: Tom da Cruz
+2025-06-30 09:21:39,660 - WARNING - Valor inválido para email: washington.a.dacruz@gmail.com
+2025-06-30 09:21:45,820 - INFO - Email enviado com sucesso para washington.a.dacruz@gmail.com, consultoria@openmanagement.com.br com anexo: relatorio_competencias_Tom_da_Cruz.pdf
+2025-06-30 09:21:45,820 - INFO - 127.0.0.1 - - [30/Jun/2025 09:21:45] "POST /submit HTTP/1.1" 200 -
+2025-06-30 09:25:35,965 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.15.159:5000
+2025-06-30 09:25:35,965 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-30 09:25:43,675 - INFO - Requisição de 127.0.0.1 para http://localhost:5000/
+2025-06-30 09:25:43,697 - INFO - 127.0.0.1 - - [30/Jun/2025 09:25:43] "GET / HTTP/1.1" 200 -
+2025-06-30 09:49:18,534 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.15.159:5000
+2025-06-30 09:49:18,535 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-30 09:49:22,585 - INFO - Requisição de 127.0.0.1 para http://localhost:5000/
+2025-06-30 09:49:22,616 - INFO - 127.0.0.1 - - [30/Jun/2025 09:49:22] "GET / HTTP/1.1" 200 -
+2025-06-30 09:57:02,403 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.15.159:5000
+2025-06-30 09:57:02,403 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-30 09:57:09,331 - INFO - Requisição de 127.0.0.1 para http://localhost:5000/
+2025-06-30 09:57:09,377 - INFO - 127.0.0.1 - - [30/Jun/2025 09:57:09] "GET / HTTP/1.1" 200 -
+2025-06-30 10:11:43,298 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.15.159:5000
+2025-06-30 10:11:43,298 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-30 10:11:46,198 - INFO - Requisição de 127.0.0.1 para http://localhost:5000/
+2025-06-30 10:11:46,203 - INFO - 127.0.0.1 - - [30/Jun/2025 10:11:46] "GET / HTTP/1.1" 200 -
+2025-06-30 10:20:11,772 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.15.159:5000
+2025-06-30 10:20:11,772 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-30 10:20:14,107 - INFO - Requisição de 127.0.0.1 para http://localhost:5000/
+2025-06-30 10:20:14,118 - INFO - 127.0.0.1 - - [30/Jun/2025 10:20:14] "GET / HTTP/1.1" 200 -
+2025-06-30 10:25:50,226 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.15.159:5000
+2025-06-30 10:25:50,226 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-30 10:25:53,034 - INFO - Requisição de 127.0.0.1 para http://localhost:5000/
+2025-06-30 10:25:53,034 - INFO - 127.0.0.1 - - [30/Jun/2025 10:25:53] "GET / HTTP/1.1" 200 -
+2025-06-30 10:34:52,643 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.15.159:5000
+2025-06-30 10:34:52,643 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-30 10:34:55,552 - INFO - Requisição de 127.0.0.1 para http://localhost:5000/
+2025-06-30 10:34:55,582 - INFO - 127.0.0.1 - - [30/Jun/2025 10:34:55] "GET / HTTP/1.1" 200 -
+2025-06-30 10:36:48,213 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.15.159:5000
+2025-06-30 10:36:48,213 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-30 10:36:50,804 - INFO - Requisição de 127.0.0.1 para http://localhost:5000/
+2025-06-30 10:36:50,854 - INFO - 127.0.0.1 - - [30/Jun/2025 10:36:50] "GET / HTTP/1.1" 200 -
+2025-06-30 10:38:34,039 - INFO - Requisição de 127.0.0.1 para http://localhost:5000/submit
+2025-06-30 10:38:34,039 - WARNING - Valor inválido para nome_completo: Tom da Cruz
+2025-06-30 10:38:34,039 - WARNING - Valor inválido para email: washington.a.dacruz@gmail.com
+2025-06-30 10:38:40,059 - INFO - Email enviado com sucesso para washington.a.dacruz@gmail.com, consultoria@openmanagement.com.br com anexo: relatorio_competencias_Tom_da_Cruz.pdf
+2025-06-30 10:38:40,064 - INFO - 127.0.0.1 - - [30/Jun/2025 10:38:40] "POST /submit HTTP/1.1" 200 -
+2025-06-30 10:38:40,129 - INFO - Requisição de 127.0.0.1 para http://localhost:5000/favicon.ico
+2025-06-30 10:38:40,129 - INFO - 127.0.0.1 - - [30/Jun/2025 10:38:40] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-06-30 10:41:15,019 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.15.159:5000
+2025-06-30 10:41:15,019 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-30 10:41:18,582 - INFO - Requisição de 127.0.0.1 para http://localhost:5000/
+2025-06-30 10:41:18,599 - INFO - 127.0.0.1 - - [30/Jun/2025 10:41:18] "GET / HTTP/1.1" 200 -
+2025-06-30 10:42:48,658 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.15.159:5000
+2025-06-30 10:42:48,658 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-30 10:42:52,169 - INFO - Requisição de 127.0.0.1 para http://localhost:5000/
+2025-06-30 10:42:52,214 - INFO - 127.0.0.1 - - [30/Jun/2025 10:42:52] "GET / HTTP/1.1" 200 -
+2025-07-07 09:44:13,645 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://169.254.0.21:5000
+2025-07-07 09:44:13,646 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-07 09:44:13,646 - INFO -  * Restarting with stat
+2025-07-07 09:44:13,783 - WARNING -  * Debugger is active!
+2025-07-07 09:44:13,783 - INFO -  * Debugger PIN: 126-362-419
+2025-07-07 09:49:14,955 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5001
+ * Running on http://169.254.0.21:5001
+2025-07-07 09:49:14,955 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-07 09:49:14,955 - INFO -  * Restarting with stat
+2025-07-07 09:49:15,116 - WARNING -  * Debugger is active!
+2025-07-07 09:49:15,117 - INFO -  * Debugger PIN: 100-184-149
+2025-07-07 09:49:49,906 - INFO - 127.0.0.1 - - [07/Jul/2025 09:49:49] "GET / HTTP/1.1" 200 -
+2025-07-07 09:49:49,936 - INFO - 127.0.0.1 - - [07/Jul/2025 09:49:49] "[36mGET /static/img/logo.png HTTP/1.1[0m" 304 -
+2025-07-07 09:50:35,858 - INFO - 127.0.0.1 - - [07/Jul/2025 09:50:35] "[33mPOST /avaliar HTTP/1.1[0m" 404 -
+2025-07-07 09:51:27,741 - INFO - 127.0.0.1 - - [07/Jul/2025 09:51:27] "GET / HTTP/1.1" 200 -
+2025-07-07 09:51:27,766 - INFO - 127.0.0.1 - - [07/Jul/2025 09:51:27] "[36mGET /static/img/logo.png HTTP/1.1[0m" 304 -
+2025-07-07 09:52:16,991 - INFO - Processando avaliaÃ§Ã£o para Teste Final Melhorias (teste.final@exemplo.com)
+2025-07-07 09:52:16,991 - INFO - Respostas recebidas: 50 itens
+2025-07-07 09:52:17,007 - WARNING - Erro ao gerar PDF: No wkhtmltopdf executable found: "b''"
+If this file exists please check that this process can read it or you can pass path to it manually in method call, check README. Otherwise please install wkhtmltopdf - https://github.com/JazzCore/python-pdfkit/wiki/Installing-wkhtmltopdf
+2025-07-07 09:52:18,309 - ERROR - Erro ao enviar email: (535, b'Authentication Failed')
+2025-07-07 09:52:18,309 - WARNING - Falha no envio de email para teste.final@exemplo.com
+2025-07-07 09:52:18,310 - INFO - 127.0.0.1 - - [07/Jul/2025 09:52:18] "POST /submit_avaliacao HTTP/1.1" 200 -
+2025-07-07 09:52:18,321 - INFO - 127.0.0.1 - - [07/Jul/2025 09:52:18] "[36mGET /static/img/logo.png HTTP/1.1[0m" 304 -
+2025-07-07 10:09:31,395 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://169.254.0.21:5000
+2025-07-07 10:09:31,396 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-07 10:09:31,396 - INFO -  * Restarting with stat
+2025-07-07 10:09:31,542 - WARNING -  * Debugger is active!
+2025-07-07 10:09:31,542 - INFO -  * Debugger PIN: 450-292-588
+2025-07-07 10:11:23,521 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://169.254.0.21:5002
+2025-07-07 10:11:23,521 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-07 10:11:23,521 - INFO -  * Restarting with stat
+2025-07-07 10:11:23,675 - WARNING -  * Debugger is active!
+2025-07-07 10:11:23,675 - INFO -  * Debugger PIN: 140-724-441
+2025-07-07 10:19:32,602 - INFO -  * Detected change in '/home/ubuntu/competencias_site/competencias_site/app.py', reloading
+2025-07-07 10:19:32,647 - INFO -  * Restarting with stat
+2025-07-07 10:19:32,805 - WARNING -  * Debugger is active!
+2025-07-07 10:19:32,805 - INFO -  * Debugger PIN: 100-184-149
+2025-07-07 10:19:43,582 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8000
+ * Running on http://169.254.0.21:8000
+2025-07-07 10:19:43,582 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-07 10:19:43,582 - INFO -  * Restarting with stat
+2025-07-07 10:19:43,770 - WARNING -  * Debugger is active!
+2025-07-07 10:19:43,770 - INFO -  * Debugger PIN: 782-351-385
+2025-07-07 10:20:25,089 - INFO - 10.126.25.1 - - [07/Jul/2025 10:20:25] "GET / HTTP/1.1" 200 -
+2025-07-07 10:20:25,115 - INFO - 10.126.25.1 - - [07/Jul/2025 10:20:25] "GET /static/img/logo.png HTTP/1.1" 200 -
+2025-07-07 10:20:25,150 - INFO - 10.126.25.1 - - [07/Jul/2025 10:20:25] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-07-07 10:20:45,552 - INFO - 10.126.25.1 - - [07/Jul/2025 10:20:45] "HEAD / HTTP/1.1" 200 -
+2025-07-07 10:20:45,561 - INFO - 10.126.25.1 - - [07/Jul/2025 10:20:45] "GET / HTTP/1.1" 200 -
+2025-07-07 10:21:14,995 - INFO - 10.126.25.1 - - [07/Jul/2025 10:21:14] "GET / HTTP/1.1" 200 -
+2025-07-07 10:21:15,324 - INFO - 10.126.25.1 - - [07/Jul/2025 10:21:15] "GET /static/img/logo.png HTTP/1.1" 200 -
+2025-07-07 10:21:15,625 - INFO - 10.126.25.1 - - [07/Jul/2025 10:21:15] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-07-07 10:22:27,138 - INFO - Processando avaliaÃ§Ã£o para Tom da Cruz (washington.a.dacruz@gmail.com)
+2025-07-07 10:22:27,138 - INFO - Respostas recebidas: 50 itens
+2025-07-07 10:22:27,153 - WARNING - Erro ao gerar PDF: No wkhtmltopdf executable found: "b''"
+If this file exists please check that this process can read it or you can pass path to it manually in method call, check README. Otherwise please install wkhtmltopdf - https://github.com/JazzCore/python-pdfkit/wiki/Installing-wkhtmltopdf
+2025-07-07 10:22:27,829 - ERROR - Erro ao enviar email: (535, b'Authentication Failed')
+2025-07-07 10:22:27,829 - WARNING - Falha no envio de email para washington.a.dacruz@gmail.com
+2025-07-07 10:22:27,829 - INFO - 10.126.25.1 - - [07/Jul/2025 10:22:27] "POST /submit_avaliacao HTTP/1.1" 200 -
+2025-07-07 10:24:00,844 - INFO - 10.126.25.1 - - [07/Jul/2025 10:24:00] "GET / HTTP/1.1" 200 -
+2025-07-07 10:24:01,032 - INFO - 10.126.25.1 - - [07/Jul/2025 10:24:01] "[36mGET /static/img/logo.png HTTP/1.1[0m" 304 -
+2025-07-07 10:26:11,121 - INFO - 10.126.25.1 - - [07/Jul/2025 10:26:11] "GET / HTTP/1.1" 200 -
+2025-07-07 10:26:11,301 - INFO - 10.126.25.1 - - [07/Jul/2025 10:26:11] "[36mGET /static/img/logo.png HTTP/1.1[0m" 304 -
+2025-07-07 10:41:31,337 - INFO -  * Detected change in '/home/ubuntu/competencias_site/competencias_site/app.py', reloading
+2025-07-07 10:41:31,377 - INFO -  * Restarting with stat
+2025-07-07 10:41:31,532 - WARNING -  * Debugger is active!
+2025-07-07 10:41:31,533 - INFO -  * Debugger PIN: 782-351-385
+2025-07-07 10:42:46,636 - INFO -  * Detected change in '/home/ubuntu/competencias_site/competencias_site/app.py', reloading
+2025-07-07 10:42:46,675 - INFO -  * Restarting with stat
+2025-07-07 10:42:46,828 - WARNING -  * Debugger is active!
+2025-07-07 10:42:46,828 - INFO -  * Debugger PIN: 782-351-385
+2025-07-07 10:43:00,848 - INFO -  * Detected change in '/home/ubuntu/competencias_site/competencias_site/app.py', reloading
+2025-07-07 10:43:00,886 - INFO -  * Restarting with stat
+2025-07-07 10:43:01,040 - WARNING -  * Debugger is active!
+2025-07-07 10:43:01,041 - INFO -  * Debugger PIN: 782-351-385
+2025-07-07 10:47:08,998 - INFO -  * Detected change in '/home/ubuntu/competencias_site/competencias_site/app.py', reloading
+2025-07-07 10:47:09,033 - INFO -  * Restarting with stat
+2025-07-07 10:47:09,176 - WARNING -  * Debugger is active!
+2025-07-07 10:47:09,177 - INFO -  * Debugger PIN: 782-351-385
+2025-07-07 10:47:31,205 - INFO -  * Detected change in '/home/ubuntu/competencias_site/competencias_site/app.py', reloading
+2025-07-07 10:47:31,243 - INFO -  * Restarting with stat
+2025-07-07 10:47:31,387 - WARNING -  * Debugger is active!
+2025-07-07 10:47:31,388 - INFO -  * Debugger PIN: 782-351-385
+2025-07-07 10:47:47,413 - INFO -  * Detected change in '/home/ubuntu/competencias_site/competencias_site/app.py', reloading
+2025-07-07 10:47:47,454 - INFO -  * Restarting with stat
+2025-07-07 10:47:47,650 - WARNING -  * Debugger is active!
+2025-07-07 10:47:47,651 - INFO -  * Debugger PIN: 782-351-385
+2025-07-07 10:48:28,705 - INFO -  * Detected change in '/home/ubuntu/competencias_site/competencias_site/app.py', reloading
+2025-07-07 10:48:28,742 - INFO -  * Restarting with stat
+2025-07-07 10:48:28,884 - WARNING -  * Debugger is active!
+2025-07-07 10:48:28,885 - INFO -  * Debugger PIN: 782-351-385
+2025-07-07 10:48:34,592 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:9000
+ * Running on http://169.254.0.21:9000
+2025-07-07 10:48:34,592 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-07 10:48:34,592 - INFO -  * Restarting with stat
+2025-07-07 10:48:34,731 - WARNING -  * Debugger is active!
+2025-07-07 10:48:34,731 - INFO -  * Debugger PIN: 372-228-205
+2025-07-07 10:49:14,273 - INFO - 10.110.228.1 - - [07/Jul/2025 10:49:14] "GET / HTTP/1.1" 200 -
+2025-07-07 10:49:14,299 - INFO - 10.110.228.1 - - [07/Jul/2025 10:49:14] "GET /static/img/logo.png HTTP/1.1" 200 -
+2025-07-07 10:49:14,319 - INFO - 10.110.228.1 - - [07/Jul/2025 10:49:14] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-07-07 10:50:52,350 - INFO - Processando avaliaÃ§Ã£o para JoÃ£o Silva Teste (teste@email.com)
+2025-07-07 10:50:52,350 - INFO - Respostas recebidas: 50 itens
+2025-07-07 10:50:52,365 - ERROR - [2025-07-07 10:50:52] Erro ao gerar PDF: No wkhtmltopdf executable found: "b''"
+If this file exists please check that this process can read it or you can pass path to it manually in method call, check README. Otherwise please install wkhtmltopdf - https://github.com/JazzCore/python-pdfkit/wiki/Installing-wkhtmltopdf
+2025-07-07 10:50:52,365 - ERROR - [2025-07-07 10:50:52] NÃ£o foi possÃ­vel enviar email - PDF nÃ£o gerado ou invÃ¡lido
+2025-07-07 10:50:52,366 - INFO - 10.110.228.1 - - [07/Jul/2025 10:50:52] "POST /submit_avaliacao HTTP/1.1" 200 -
+2025-07-07 10:50:52,385 - INFO - 10.110.228.1 - - [07/Jul/2025 10:50:52] "[36mGET /static/img/logo.png HTTP/1.1[0m" 304 -
+2025-07-07 10:51:59,222 - INFO - 10.110.228.1 - - [07/Jul/2025 10:51:59] "GET / HTTP/1.1" 200 -
+2025-07-07 10:51:59,247 - INFO - 10.110.228.1 - - [07/Jul/2025 10:51:59] "[36mGET /static/img/logo.png HTTP/1.1[0m" 304 -
+2025-07-07 10:52:39,933 - INFO - Processando avaliaÃ§Ã£o para Maria Silva Teste (teste@email.com)
+2025-07-07 10:52:39,933 - INFO - Respostas recebidas: 50 itens
+2025-07-07 10:52:41,676 - INFO - [2025-07-07 10:52:41] PDF gerado com sucesso: /home/ubuntu/competencias_site/competencias_site/static/reports/relatorio_Maria_Silva_Teste_20250707_105239.pdf (577432 bytes)
+2025-07-07 10:52:42,251 - ERROR - [2025-07-07 10:52:42] Erro ao enviar email: (535, b'Authentication Failed')
+2025-07-07 10:52:42,251 - WARNING - [2025-07-07 10:52:42] Falha no envio de email para teste@email.com
+2025-07-07 10:52:42,252 - INFO - 10.110.228.1 - - [07/Jul/2025 10:52:42] "POST /submit_avaliacao HTTP/1.1" 200 -
+2025-07-07 10:52:42,271 - INFO - 10.110.228.1 - - [07/Jul/2025 10:52:42] "[36mGET /static/img/logo.png HTTP/1.1[0m" 304 -
+2025-07-07 10:53:16,095 - INFO -  * Detected change in '/home/ubuntu/competencias_site/competencias_site/app.py', reloading
+2025-07-07 10:53:16,127 - INFO -  * Restarting with stat
+2025-07-07 10:53:16,255 - INFO -  * Detected change in '/home/ubuntu/competencias_site/competencias_site/app.py', reloading
+2025-07-07 10:53:16,272 - WARNING -  * Debugger is active!
+2025-07-07 10:53:16,272 - INFO -  * Debugger PIN: 372-228-205
+2025-07-07 10:53:16,286 - INFO -  * Restarting with stat
+2025-07-07 10:53:16,443 - WARNING -  * Debugger is active!
+2025-07-07 10:53:16,444 - INFO -  * Debugger PIN: 782-351-385
+2025-07-07 10:53:26,290 - INFO - 10.110.228.1 - - [07/Jul/2025 10:53:26] "GET / HTTP/1.1" 200 -
+2025-07-07 10:53:26,319 - INFO - 10.110.228.1 - - [07/Jul/2025 10:53:26] "[36mGET /static/img/logo.png HTTP/1.1[0m" 304 -
+2025-07-07 10:53:42,948 - INFO - Processando avaliaÃ§Ã£o para Teste Final Email (teste@email.com)
+2025-07-07 10:53:42,949 - INFO - Respostas recebidas: 50 itens
+2025-07-07 10:53:44,289 - INFO - [2025-07-07 10:53:44] PDF gerado com sucesso: /home/ubuntu/competencias_site/competencias_site/static/reports/relatorio_Teste_Final_Email_20250707_105342.pdf (577420 bytes)
+2025-07-07 10:53:45,047 - ERROR - [2025-07-07 10:53:45] Erro ao enviar email: (535, b'Authentication Failed')
+2025-07-07 10:53:45,047 - WARNING - [2025-07-07 10:53:45] Falha no envio de email para teste@email.com
+2025-07-07 10:53:45,048 - INFO - 10.110.228.1 - - [07/Jul/2025 10:53:45] "POST /submit_avaliacao HTTP/1.1" 200 -
+2025-07-07 10:53:45,067 - INFO - 10.110.228.1 - - [07/Jul/2025 10:53:45] "[36mGET /static/img/logo.png HTTP/1.1[0m" 304 -
+2025-07-07 15:12:28,593 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:9000
+ * Running on http://192.168.15.159:9000
+2025-07-07 15:12:28,595 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-07 15:12:28,598 - INFO -  * Restarting with stat
+2025-07-07 15:12:28,792 - WARNING -  * Debugger is active!
+2025-07-07 15:12:28,802 - INFO -  * Debugger PIN: 153-079-187
+2025-07-07 15:15:37,632 - INFO - 192.168.15.159 - - [07/Jul/2025 15:15:37] "GET / HTTP/1.1" 200 -
+2025-07-07 15:15:37,795 - INFO - 192.168.15.159 - - [07/Jul/2025 15:15:37] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-07-07 15:15:38,384 - INFO - 192.168.15.159 - - [07/Jul/2025 15:15:38] "GET /static/img/logo.png HTTP/1.1" 200 -
+2025-07-07 15:17:05,567 - INFO - Processando avaliação para Tom da Cruz (washington.a.dacruz@gmail.com)
+2025-07-07 15:17:05,567 - INFO - Respostas recebidas: 50 itens
+2025-07-07 15:17:06,932 - INFO - [2025-07-07 15:17:06] PDF gerado com sucesso: C:\Users\User\OneDrive\Área de Trabalho\site avaliacao_competencias\competencias_site\competencias_site\static\reports\relatorio_Tom_da_Cruz_20250707_151705.pdf (189841 bytes)
+2025-07-07 15:17:12,765 - INFO - [2025-07-07 15:17:12] E-mail enviado para: washington.a.dacruz@gmail.com, consultoria@openmanagement.com.br
+2025-07-07 15:17:12,797 - INFO - [2025-07-07 15:17:12] Email enviado com sucesso para washington.a.dacruz@gmail.com
+2025-07-07 15:17:12,797 - INFO - 192.168.15.159 - - [07/Jul/2025 15:17:12] "POST /submit_avaliacao HTTP/1.1" 200 -
+2025-07-07 15:19:03,694 - INFO - 192.168.15.159 - - [07/Jul/2025 15:19:03] "GET / HTTP/1.1" 200 -
+2025-07-07 15:19:03,713 - INFO - 192.168.15.159 - - [07/Jul/2025 15:19:03] "GET /static/img/logo.png HTTP/1.1" 200 -
+2025-07-07 16:24:09,584 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:9000
+ * Running on http://192.168.15.159:9000
+2025-07-07 16:24:09,584 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-07 16:24:09,597 - INFO -  * Restarting with stat
+2025-07-07 16:24:09,898 - WARNING -  * Debugger is active!
+2025-07-07 16:24:09,931 - INFO -  * Debugger PIN: 153-079-187
+2025-07-07 16:24:23,540 - INFO - 192.168.15.159 - - [07/Jul/2025 16:24:23] "GET / HTTP/1.1" 200 -
+2025-07-07 16:24:24,437 - INFO - 192.168.15.159 - - [07/Jul/2025 16:24:24] "[36mGET /static/img/logo.png HTTP/1.1[0m" 304 -

@@ -174,4 +174,3 @@ O site agora oferece uma experiência completa de autoavaliação com:
 
 O projeto está pronto para uso em produção!
 
-# avaliacao-competencias

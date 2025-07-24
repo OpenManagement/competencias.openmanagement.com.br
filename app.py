@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, url_for, session, redirect
+from flask import Flask, render_template, request, jsonify, url_for
 import logging
 from datetime import datetime
 import smtplib
@@ -8,18 +8,8 @@ from email.mime.base import MIMEBase
 from email import encoders
 import pdfkit
 import os
-import mercadopago
-from tabela_referencia_competencias import COMPETENCIAS_ACOES
 
 app = Flask(__name__)
-app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
-
-# Configuração do Mercado Pago via variáveis de ambiente
-mp = mercadopago.SDK(os.getenv("MP_ACCESS_TOKEN"))
-PUBLIC_KEY = os.getenv("MP_PUBLIC_KEY")
-CLIENT_ID = os.getenv("MP_CLIENT_ID")
-CLIENT_SECRET = os.getenv("MP_CLIENT_SECRET")
-
 
 # Configuração de logging
 logging.basicConfig(
@@ -207,52 +197,6 @@ def identificar_subcompetencias_destaque(ranking_50):
     
     return top_subcompetencias, bottom_subcompetencias
 
-def identificar_competencias_desenvolver(ranking_principais):
-    """Identifica as 3 competências com menores pontuações para desenvolvimento"""
-    # Pegar as 3 últimas (menores pontuações) e ordenar por pontuação crescente
-    competencias_desenvolver = ranking_principais[-3:]
-    competencias_desenvolver.reverse()  # Do menor para o maior
-    return competencias_desenvolver
-
-def mapear_nome_competencia_para_chave(nome_competencia):
-    """Mapeia nome da competência para chave usada na tabela de referência"""
-    mapeamento = {
-        'Comunicação': 'comunicacao',
-        'Organização': 'organizacao', 
-        'Proatividade': 'proatividade',
-        'Pensamento Crítico': 'pensamento_critico',
-        'Produtividade': 'produtividade'
-    }
-    return mapeamento.get(nome_competencia, nome_competencia.lower())
-
-def gerar_plano_desenvolvimento(competencias_desenvolver, versao='gratuita'):
-    """Gera plano de desenvolvimento baseado nas competências a desenvolver"""
-    plano = []
-    
-    # Para versão gratuita, retorna apenas preview
-    if versao == 'gratuita':
-        return plano
-    
-    # Para versão premium, gera plano completo
-    for comp in competencias_desenvolver:
-        chave_competencia = mapear_nome_competencia_para_chave(comp['nome'])
-        
-        if chave_competencia in COMPETENCIAS_ACOES:
-            acoes_competencia = COMPETENCIAS_ACOES[chave_competencia]
-            
-            # Pegar as 3 ações dos graus 1, 2 e 3
-            acoes_plano = []
-            for grau in ['grau_1', 'grau_2', 'grau_3']:
-                if grau in acoes_competencia:
-                    acoes_plano.extend(acoes_competencia[grau])
-            
-            plano.append({
-                'nome': comp['nome'],
-                'acoes': acoes_plano
-            })
-    
-    return plano
-
 def gerar_corpo_email(nome, pontuacao_geral):
     """Gera o corpo do email personalizado"""
     return f"""Olá {nome}!
@@ -281,11 +225,11 @@ def enviar_email(nome, email_destino, pdf_path, pontuacao_geral):
     """Envia email com relatório em anexo usando configurações SMTP Zoho"""
     try:
         # Configurações do SMTP Zoho Mail - Exatamente conforme especificado
-        smtp_server = os.getenv("MAIL_SERVER")
-        smtp_port = int(os.getenv("MAIL_PORT", 465))  # Default: 465
-        email_usuario = os.getenv("MAIL_USERNAME")
-        email_senha = os.getenv("MAIL_PASSWORD")
-        email_interno = os.getenv("MAIL_USERNAME")
+        smtp_server = "smtppro.zoho.com"
+        smtp_port = 465  # SSL
+        email_usuario = "consultoria@openmanagement.com.br"
+        email_senha = "Dril2001*#2001*#"  # Senha do app Zoho Mail corrigida
+        email_interno = "consultoria@openmanagement.com.br"
         
         # Verificar se o arquivo PDF existe antes de prosseguir
         if not pdf_path or not os.path.exists(pdf_path):
@@ -392,112 +336,6 @@ consultoria@openmanagement.com.br"""
 def index():
     return render_template('index.html')
 
-@app.route('/checkout', methods=['POST'])
-def checkout():
-    """Cria preferência de pagamento no Mercado Pago"""
-    try:
-        # Dados do produto Premium
-        preference_data = {
-            "items": [
-                {
-                    "title": "Avaliação de Competências - Versão Premium",
-                    "quantity": 1,
-                    "unit_price": 29.90,
-                    "currency_id": "BRL"
-                }
-            ],
-            "back_urls": {
-                "success": request.url_root.rstrip('/') + "/pagamento_sucesso",
-                "failure": request.url_root.rstrip('/') + "/pagamento_falha", 
-                "pending": request.url_root.rstrip('/') + "/pagamento_pendente"
-            },
-            "external_reference": f"premium_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        }
-        
-        # Criar preferência
-        preference_response = mp.preference().create(preference_data)
-        
-        if preference_response["status"] == 201:
-            preference = preference_response["response"]
-            logger.info(f"Preferência criada: {preference['id']}")
-            
-            return jsonify({
-                'success': True,
-                'preference_id': preference['id'],
-                'init_point': preference['init_point']
-            })
-        else:
-            logger.error(f"Erro ao criar preferência MP: {preference_response}")
-            return jsonify({
-                'success': False,
-                'message': 'Erro ao processar pagamento'
-            }), 500
-        
-    except Exception as e:
-        logger.error(f"Erro ao criar preferência MP: {e}")
-        return jsonify({
-            'success': False,
-            'message': 'Erro ao processar pagamento'
-        }), 500
-
-@app.route('/mp/webhook', methods=['POST'])
-def mp_webhook():
-    """Webhook para receber notificações do Mercado Pago"""
-    try:
-        data = request.get_json()
-        
-        if data and data.get('type') == 'payment':
-            payment_id = data['data']['id']
-            
-            # Buscar informações do pagamento
-            payment_info = mp.payment().get(payment_id)
-            payment = payment_info["response"]
-            
-            logger.info(f"Webhook recebido - Payment ID: {payment_id}, Status: {payment.get('status')}")
-            
-            # Verificar se pagamento foi aprovado
-            if payment.get('status') == 'approved':
-                # Marcar usuário como premium na sessão
-                # Em produção, isso deveria ser salvo em banco de dados
-                external_reference = payment.get('external_reference', '')
-                session[f'premium_paid_{external_reference}'] = True
-                session['premium_user'] = True
-                
-                logger.info(f"Pagamento aprovado para referência: {external_reference}")
-                
-                return jsonify({'status': 'success'}), 200
-            else:
-                logger.warning(f"Pagamento não aprovado - Status: {payment.get('status')}")
-                return jsonify({'status': 'payment_not_approved'}), 200
-                
-        return jsonify({'status': 'ignored'}), 200
-        
-    except Exception as e:
-        logger.error(f"Erro no webhook MP: {e}")
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/pagamento_sucesso')
-def pagamento_sucesso():
-    """Página de sucesso do pagamento"""
-    session['premium_user'] = True
-    return render_template('pagamento_sucesso.html')
-
-@app.route('/pagamento_falha')
-def pagamento_falha():
-    """Página de falha do pagamento"""
-    return render_template('pagamento_falha.html')
-
-@app.route('/pagamento_pendente')
-def pagamento_pendente():
-    """Página de pagamento pendente"""
-    return render_template('pagamento_pendente.html')
-
-@app.route('/verificar_premium')
-def verificar_premium():
-    """Verifica se usuário tem acesso premium"""
-    is_premium = session.get('premium_user', False)
-    return jsonify({'premium': is_premium})
-
 @app.route('/submit_avaliacao', methods=['POST'])
 def submit_avaliacao():
     try:
@@ -505,7 +343,6 @@ def submit_avaliacao():
         nome = request.form.get('nome_completo', '').strip()
         email = request.form.get('email', '').strip()
         celular = request.form.get('celular', '').strip()
-        tipo_experiencia = request.form.get('tipo_experiencia', 'gratuita').strip()
         
         # Validar dados obrigatórios
         if not nome or not email:
@@ -513,16 +350,6 @@ def submit_avaliacao():
                 'success': False,
                 'message': 'Nome e email são obrigatórios'
             }), 400
-        
-        # Controle de acesso premium
-        if tipo_experiencia == 'premium':
-            is_premium = session.get('premium_user', False)
-            if not is_premium:
-                return jsonify({
-                    'success': False,
-                    'message': 'Acesso premium necessário. Complete o pagamento primeiro.',
-                    'redirect_to_payment': True
-                }), 403
         
         # Obter todas as respostas
         respostas = {}
@@ -548,15 +375,6 @@ def submit_avaliacao():
         pontos_fortes, oportunidades = identificar_pontos_fortes_e_oportunidades(ranking_principais)
         top_subcompetencias, bottom_subcompetencias = identificar_subcompetencias_destaque(ranking_50_competencias)
         
-        # Identificar competências a desenvolver (3 piores)
-        competencias_desenvolver = identificar_competencias_desenvolver(ranking_principais)
-        
-        # Determinar versão baseada na escolha do usuário
-        versao = tipo_experiencia if tipo_experiencia in ['gratuita', 'premium'] else 'gratuita'
-        
-        # Gerar plano de desenvolvimento
-        plano_desenvolvimento = gerar_plano_desenvolvimento(competencias_desenvolver, versao)
-        
         # Preparar dados para o template
         data_avaliacao = datetime.now().strftime('%d/%m/%Y')
         
@@ -571,23 +389,11 @@ def submit_avaliacao():
             'pontos_fortes': pontos_fortes,
             'oportunidades': oportunidades,
             'top_subcompetencias': top_subcompetencias,
-            'bottom_subcompetencias': bottom_subcompetencias,
-            'competencias_desenvolver': competencias_desenvolver,
-            'plano_desenvolvimento': plano_desenvolvimento,
-            'versao': versao
+            'bottom_subcompetencias': bottom_subcompetencias
         }
         
         # Gerar HTML do relatório
         html_relatorio = render_template('relatorio_template.html', **dados_template)
-        
-        # Substituir URLs relativos por caminhos absolutos para o PDF
-        import re
-        base_url = request.url_root
-        html_relatorio = re.sub(
-            r'src="([^"]*)"',
-            lambda m: f'src="{base_url.rstrip("/")}{m.group(1)}"' if m.group(1).startswith('/') else m.group(0),
-            html_relatorio
-        )
         
         # Gerar PDF e salvar em pasta acessível
         pdf_path = None
@@ -602,7 +408,7 @@ def submit_avaliacao():
             
             pdf_path = os.path.join(reports_dir, pdf_filename)
             
-            # Opções para geração do PDF com alta fidelidade
+            # Opções para geração do PDF
             options = {
                 'page-size': 'A4',
                 'margin-top': '0.75in',
@@ -613,26 +419,7 @@ def submit_avaliacao():
                 'no-outline': None,
                 'enable-local-file-access': None,
                 'disable-smart-shrinking': '',
-                'print-media-type': '',
-                'enable-javascript': '',
-                'javascript-delay': '2000',  # Aumentado para garantir carregamento completo
-                'images': '',
-                'enable-external-links': '',
-                'enable-internal-links': '',
-                'zoom': '1.0',
-                'dpi': '300',
-                'image-dpi': '300',
-                'image-quality': '100',
-                'footer-line': '',
-                'quiet': '',
-                'load-error-handling': 'ignore',
-                'load-media-error-handling': 'ignore',
-                'disable-plugins': '',
-                'minimum-font-size': '12',
-                'background': '',
-                'lowquality': False,
-                'grayscale': False,
-                'orientation': 'Portrait'
+                'print-media-type': ''
             }
             
             # Gerar PDF
@@ -642,7 +429,6 @@ def submit_avaliacao():
             if os.path.exists(pdf_path) and os.path.getsize(pdf_path) > 0:
                 timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 logger.info(f"[{timestamp}] PDF gerado com sucesso: {pdf_path} ({os.path.getsize(pdf_path)} bytes)")
-                logger.info(f"[{timestamp}] PDF de Diagnóstico formatado conforme HTML — OK")
             else:
                 raise Exception("Arquivo PDF não foi criado ou está vazio")
             
