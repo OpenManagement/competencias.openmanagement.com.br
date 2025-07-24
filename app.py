@@ -6,14 +6,17 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
-import pdfkit
-import os
+import platform, os, pdfkit
 import mercadopago
 from tabela_referencia_competencias import COMPETENCIAS_ACOES
-from dotenv import load_dotenv
 
-# Carregar variáveis de ambiente do arquivo .env
-load_dotenv()
+# Configuração do wkhtmltopdf
+if platform.system().lower() == 'windows':
+    WKHTMLTOPDF_PATH = r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe"
+else:
+    WKHTMLTOPDF_PATH = "/usr/bin/wkhtmltopdf"
+
+pdf_config = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_PATH)
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
@@ -586,13 +589,16 @@ def submit_avaliacao():
         
         # Substituir URLs relativos por caminhos absolutos para o PDF
         import re
-        # Usar caminhos absolutos locais para recursos estáticos
-        current_dir = os.path.abspath('.')
+        base_url = request.url_root
         html_relatorio = re.sub(
-            r'src="/static/([^"]*)"',
-            lambda m: f'src="file://{current_dir}/static/{m.group(1)}"',
+            r'src="([^"]*)"',
+            lambda m: f'src="{base_url.rstrip("/")}{m.group(1)}"' if m.group(1).startswith('/') else m.group(0),
             html_relatorio
         )
+        
+        # Remover apenas scripts que podem causar timeout, preservar CSS
+        html_relatorio = re.sub(r'<script[^>]*>.*?</script>', '', html_relatorio, flags=re.DOTALL)
+        
         
         # Gerar PDF e salvar em pasta acessível
         pdf_path = None
@@ -607,7 +613,7 @@ def submit_avaliacao():
             
             pdf_path = os.path.join(reports_dir, pdf_filename)
             
-            # Opções otimizadas para geração do PDF
+            # Opções para geração do PDF otimizadas para evitar timeout
             options = {
                 'page-size': 'A4',
                 'margin-top': '0.75in',
@@ -621,24 +627,33 @@ def submit_avaliacao():
                 'print-media-type': '',
                 'images': '',
                 'zoom': '1.0',
-                'dpi': '150',  # Otimizado para velocidade
-                'image-dpi': '150',  # Otimizado para velocidade
-                'image-quality': '75',  # Otimizado para velocidade
+                'dpi': '150',  # Reduzido para melhor performance
+                'image-dpi': '150',  # Reduzido para melhor performance
+                'image-quality': '80',  # Reduzido para melhor performance
+                'footer-line': '',
                 'quiet': '',
                 'load-error-handling': 'ignore',
                 'load-media-error-handling': 'ignore',
                 'disable-plugins': '',
                 'minimum-font-size': '12',
                 'background': '',
+                'lowquality': False,
+                'grayscale': False,
                 'orientation': 'Portrait',
-                'disable-javascript': '',  # Desabilitar JS para acelerar
-                'no-stop-slow-scripts': '',
-                'disable-external-links': '',
-                'disable-internal-links': ''
+                'disable-external-links': '',  # Evitar carregamento de recursos externos
+                'disable-forms': '',  # Desabilitar formulários para melhor performance
+                'disable-javascript': '',  # Desabilitar JS para evitar timeout
+                'no-stop-slow-scripts': ''  # Não parar scripts lentos
             }
             
-            # Gerar PDF
-            pdfkit.from_string(html_relatorio, pdf_path, options=options)
+            # Gerar PDF com tratamento de exceções robusto
+            pdfkit.from_string(
+                html_relatorio,
+                pdf_path,
+                configuration=pdf_config,
+                options=options
+            )
+            logger.info(f"PDF gerado: {pdf_path}")
             
             # Verificar se o arquivo foi criado e tem tamanho válido
             if os.path.exists(pdf_path) and os.path.getsize(pdf_path) > 0:
@@ -647,25 +662,23 @@ def submit_avaliacao():
                 logger.info(f"[{timestamp}] PDF de Diagnóstico formatado conforme HTML — OK")
             else:
                 raise Exception("Arquivo PDF não foi criado ou está vazio")
-            
+                
         except Exception as e:
-            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            logger.error(f"[{timestamp}] Erro ao gerar PDF: {e}")
-            pdf_path = None
+            logger.error("Erro PDF/e-mail", exc_info=True)
+            return jsonify({"error": "Erro interno ao gerar PDF ou enviar e-mail"}), 500
         
         # Tentar enviar email apenas se PDF foi gerado com sucesso
         if pdf_path and os.path.exists(pdf_path) and os.path.getsize(pdf_path) > 0:
             try:
                 envio_sucesso = enviar_email(nome, email, pdf_path, pontuacao_geral)
                 if envio_sucesso:
-                    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    logger.info(f"[{timestamp}] Email enviado com sucesso para {email}")
+                    logger.info(f"E-mail enviado: {email}")
                 else:
                     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     logger.warning(f"[{timestamp}] Falha no envio de email para {email}")
             except Exception as e:
-                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                logger.error(f"[{timestamp}] Erro ao enviar email: {e}")
+                logger.error("Erro PDF/e-mail", exc_info=True)
+                return jsonify({"error": "Erro interno ao gerar PDF ou enviar e-mail"}), 500
         else:
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             logger.error(f"[{timestamp}] Não foi possível enviar email - PDF não gerado ou inválido")
