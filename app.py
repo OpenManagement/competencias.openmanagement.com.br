@@ -18,6 +18,10 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
 
+# Configuração do wkhtmltopdf para Railway
+path_wkhtmltopdf = os.path.join(os.getcwd(), 'bin', 'wkhtmltopdf')
+config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)
+
 # Configuração do Mercado Pago via variáveis de ambiente
 mp = mercadopago.SDK(os.getenv("MP_ACCESS_TOKEN"))
 PUBLIC_KEY = os.getenv("MP_PUBLIC_KEY")
@@ -662,7 +666,7 @@ def submit_avaliacao():
             }
             
             # Gerar PDF
-            pdfkit.from_string(html_relatorio, pdf_path, options=options)
+            pdfkit.from_string(html_relatorio, pdf_path, options=options, configuration=config)
             
             # Verificar se o arquivo foi criado e tem tamanho válido
             if os.path.exists(pdf_path) and os.path.getsize(pdf_path) > 0:
