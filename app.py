@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, url_for
+from flask import Flask, render_template, request, jsonify, url_for, session, redirect
 import logging
 from datetime import datetime
 import smtplib
@@ -10,8 +10,13 @@ import pdfkit
 import os
 import mercadopago
 from tabela_referencia_competencias import COMPETENCIAS_ACOES
+from dotenv import load_dotenv
+
+# Carregar variáveis de ambiente do arquivo .env
+load_dotenv()
 
 app = Flask(__name__)
+app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
 
 # Configuração do Mercado Pago via variáveis de ambiente
 mp = mercadopago.SDK(os.getenv("MP_ACCESS_TOKEN"))
@@ -391,6 +396,112 @@ consultoria@openmanagement.com.br"""
 def index():
     return render_template('index.html')
 
+@app.route('/checkout', methods=['POST'])
+def checkout():
+    """Cria preferência de pagamento no Mercado Pago"""
+    try:
+        # Dados do produto Premium
+        preference_data = {
+            "items": [
+                {
+                    "title": "Avaliação de Competências - Versão Premium",
+                    "quantity": 1,
+                    "unit_price": 29.90,
+                    "currency_id": "BRL"
+                }
+            ],
+            "back_urls": {
+                "success": request.url_root.rstrip('/') + "/pagamento_sucesso",
+                "failure": request.url_root.rstrip('/') + "/pagamento_falha", 
+                "pending": request.url_root.rstrip('/') + "/pagamento_pendente"
+            },
+            "external_reference": f"premium_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        }
+        
+        # Criar preferência
+        preference_response = mp.preference().create(preference_data)
+        
+        if preference_response["status"] == 201:
+            preference = preference_response["response"]
+            logger.info(f"Preferência criada: {preference['id']}")
+            
+            return jsonify({
+                'success': True,
+                'preference_id': preference['id'],
+                'init_point': preference['init_point']
+            })
+        else:
+            logger.error(f"Erro ao criar preferência MP: {preference_response}")
+            return jsonify({
+                'success': False,
+                'message': 'Erro ao processar pagamento'
+            }), 500
+        
+    except Exception as e:
+        logger.error(f"Erro ao criar preferência MP: {e}")
+        return jsonify({
+            'success': False,
+            'message': 'Erro ao processar pagamento'
+        }), 500
+
+@app.route('/mp/webhook', methods=['POST'])
+def mp_webhook():
+    """Webhook para receber notificações do Mercado Pago"""
+    try:
+        data = request.get_json()
+        
+        if data and data.get('type') == 'payment':
+            payment_id = data['data']['id']
+            
+            # Buscar informações do pagamento
+            payment_info = mp.payment().get(payment_id)
+            payment = payment_info["response"]
+            
+            logger.info(f"Webhook recebido - Payment ID: {payment_id}, Status: {payment.get('status')}")
+            
+            # Verificar se pagamento foi aprovado
+            if payment.get('status') == 'approved':
+                # Marcar usuário como premium na sessão
+                # Em produção, isso deveria ser salvo em banco de dados
+                external_reference = payment.get('external_reference', '')
+                session[f'premium_paid_{external_reference}'] = True
+                session['premium_user'] = True
+                
+                logger.info(f"Pagamento aprovado para referência: {external_reference}")
+                
+                return jsonify({'status': 'success'}), 200
+            else:
+                logger.warning(f"Pagamento não aprovado - Status: {payment.get('status')}")
+                return jsonify({'status': 'payment_not_approved'}), 200
+                
+        return jsonify({'status': 'ignored'}), 200
+        
+    except Exception as e:
+        logger.error(f"Erro no webhook MP: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/pagamento_sucesso')
+def pagamento_sucesso():
+    """Página de sucesso do pagamento"""
+    session['premium_user'] = True
+    return render_template('pagamento_sucesso.html')
+
+@app.route('/pagamento_falha')
+def pagamento_falha():
+    """Página de falha do pagamento"""
+    return render_template('pagamento_falha.html')
+
+@app.route('/pagamento_pendente')
+def pagamento_pendente():
+    """Página de pagamento pendente"""
+    return render_template('pagamento_pendente.html')
+
+@app.route('/verificar_premium')
+def verificar_premium():
+    """Verifica se usuário tem acesso premium"""
+    is_premium = session.get('premium_user', False)
+    return jsonify({'premium': is_premium})
+
 @app.route('/submit_avaliacao', methods=['POST'])
 def submit_avaliacao():
     try:
@@ -406,6 +517,16 @@ def submit_avaliacao():
                 'success': False,
                 'message': 'Nome e email são obrigatórios'
             }), 400
+        
+        # Controle de acesso premium
+        if tipo_experiencia == 'premium':
+            is_premium = session.get('premium_user', False)
+            if not is_premium:
+                return jsonify({
+                    'success': False,
+                    'message': 'Acesso premium necessário. Complete o pagamento primeiro.',
+                    'redirect_to_payment': True
+                }), 403
         
         # Obter todas as respostas
         respostas = {}
@@ -463,6 +584,16 @@ def submit_avaliacao():
         # Gerar HTML do relatório
         html_relatorio = render_template('relatorio_template.html', **dados_template)
         
+        # Substituir URLs relativos por caminhos absolutos para o PDF
+        import re
+        # Usar caminhos absolutos locais para recursos estáticos
+        current_dir = os.path.abspath('.')
+        html_relatorio = re.sub(
+            r'src="/static/([^"]*)"',
+            lambda m: f'src="file://{current_dir}/static/{m.group(1)}"',
+            html_relatorio
+        )
+        
         # Gerar PDF e salvar em pasta acessível
         pdf_path = None
         try:
@@ -476,7 +607,7 @@ def submit_avaliacao():
             
             pdf_path = os.path.join(reports_dir, pdf_filename)
             
-            # Opções para geração do PDF
+            # Opções otimizadas para geração do PDF
             options = {
                 'page-size': 'A4',
                 'margin-top': '0.75in',
@@ -488,17 +619,22 @@ def submit_avaliacao():
                 'enable-local-file-access': None,
                 'disable-smart-shrinking': '',
                 'print-media-type': '',
-                'enable-javascript': '',
-                'javascript-delay': '1000',
                 'images': '',
-                'enable-external-links': '',
-                'enable-internal-links': '',
                 'zoom': '1.0',
-                'dpi': '300',
-                'image-dpi': '300',
-                'image-quality': '100',
-                'footer-line': '',
-                'quiet': ''
+                'dpi': '150',  # Otimizado para velocidade
+                'image-dpi': '150',  # Otimizado para velocidade
+                'image-quality': '75',  # Otimizado para velocidade
+                'quiet': '',
+                'load-error-handling': 'ignore',
+                'load-media-error-handling': 'ignore',
+                'disable-plugins': '',
+                'minimum-font-size': '12',
+                'background': '',
+                'orientation': 'Portrait',
+                'disable-javascript': '',  # Desabilitar JS para acelerar
+                'no-stop-slow-scripts': '',
+                'disable-external-links': '',
+                'disable-internal-links': ''
             }
             
             # Gerar PDF

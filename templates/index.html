@@ -322,7 +322,7 @@
             <li>✅ Relatório em PDF profissional</li>
             <li>✅ Suporte prioritário</li>
           </ul>
-          <button onclick="iniciarAvaliacao('premium')">Adquirir Premium - R$ 29,90</button>
+          <button onclick="iniciarPagamentoPremium()">Adquirir Premium - R$ 29,90</button>
         </div>
       </div>
     </div>
@@ -506,6 +506,32 @@
       document.getElementById('avaliacaoSection').scrollIntoView({ 
         behavior: 'smooth' 
       });
+    }
+
+    async function iniciarPagamentoPremium() {
+      try {
+        const response = await fetch('/checkout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success && result.init_point) {
+            // Redirecionar para o checkout do Mercado Pago
+            window.location.href = result.init_point;
+          } else {
+            alert('Erro ao processar pagamento. Tente novamente.');
+          }
+        } else {
+          alert('Erro ao conectar com o servidor. Tente novamente.');
+        }
+      } catch (error) {
+        console.error('Erro:', error);
+        alert('Erro ao processar pagamento. Tente novamente.');
+      }
     }
 
     document.getElementById("avaliacaoForm").addEventListener("submit", async function(event) {
