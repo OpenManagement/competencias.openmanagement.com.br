@@ -26,4 +26,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 8080
 
 # Comando para iniciar o Gunicorn com Flask
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "app:app"]
+CMD exec gunicorn --bind 0.0.0.0:${PORT:-8080} app:app
