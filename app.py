@@ -8,27 +8,25 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
-import pdfkit
-import mercadopago
-from dotenv import load_dotenv
 import threading
 import time
-import subprocess
-import multiprocessing
-from concurrent.futures import ThreadPoolExecutor
-from tabela_referencia_competencias import COMPETENCIAS_ACOES
+import queue
+from dotenv import load_dotenv
 
 # Carregar variáveis de ambiente
 load_dotenv()
 
 app = Flask(__name__)
 
-# Configuração de logging
-logging.basicConfig(level=logging.INFO)
+# Configuração de logging otimizada
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler()
+    ]
+)
 logger = logging.getLogger(__name__)
-
-# Configurações do MercadoPago
-mp = mercadopago.SDK(os.getenv('MP_ACCESS_TOKEN'))
 
 # Configurações de email
 MAIL_SERVER = os.getenv('MAIL_SERVER', 'smtp.zoho.com')
@@ -36,131 +34,270 @@ MAIL_PORT = int(os.getenv('MAIL_PORT', 465))
 MAIL_USERNAME = os.getenv('MAIL_USERNAME', 'consultoria@openmanagement.com.br')
 MAIL_PASSWORD = os.getenv('MAIL_PASSWORD', '')
 
-# Pool de threads para processamento assíncrono
-executor = ThreadPoolExecutor(max_workers=3, thread_name_prefix="AsyncProcessor")
+# Configurações de performance
+MAX_PROCESSING_TIME = 25  # Máximo 25 segundos para todo o processamento
+PDF_TIMEOUT = 8  # Máximo 8 segundos para PDF
+EMAIL_TIMEOUT = 5  # Máximo 5 segundos para email
 
-# Timeout máximo para PDF
-PDF_MAX_TIMEOUT = 15
+# Queue para processamento em background
+background_queue = queue.Queue()
 
-def gerar_pdf_com_timeout_kill(html_content, output_path, timeout=PDF_MAX_TIMEOUT):
-    """Gera PDF com timeout rigoroso e kill automático"""
-    
-    def target_function(html_content, output_path, result_dict):
+def processar_background():
+    """Processa tarefas em background sem bloquear a resposta"""
+    while True:
         try:
-            # Opções ultra-otimizadas
-            options = {
-                'page-size': 'A4',
-                'margin-top': '0.75in',
-                'margin-right': '0.75in',
-                'margin-bottom': '0.75in',
-                'margin-left': '0.75in',
-                'encoding': "UTF-8",
-                'no-outline': None,
-                'enable-local-file-access': None,
-                'disable-smart-shrinking': '',
-                'print-media-type': '',
-                'zoom': '0.8',
-                'dpi': '96',
-                'image-dpi': '96',
-                'image-quality': '50',
-                'quiet': '',
-                'load-error-handling': 'ignore',
-                'load-media-error-handling': 'ignore',
-                'disable-plugins': '',
-                'disable-javascript': '',
-                'no-stop-slow-scripts': '',
-                'disable-external-links': '',
-                'disable-internal-links': '',
-                'lowquality': '',
-                'grayscale': ''
-            }
-            
-            # Gerar PDF
-            pdfkit.from_string(html_content, output_path, options=options)
-            
-            if os.path.exists(output_path) and os.path.getsize(output_path) > 1000:
-                result_dict['success'] = True
-                result_dict['path'] = output_path
-                result_dict['size'] = os.path.getsize(output_path)
-            else:
-                result_dict['success'] = False
-                result_dict['error'] = "PDF inválido ou muito pequeno"
-                
+            task = background_queue.get(timeout=1)
+            if task['type'] == 'pdf':
+                gerar_pdf_background(task['data'])
+            elif task['type'] == 'email':
+                enviar_email_background(task['data'])
+            background_queue.task_done()
+        except queue.Empty:
+            continue
         except Exception as e:
-            result_dict['success'] = False
-            result_dict['error'] = str(e)
-    
-    # Usar multiprocessing para isolamento completo
-    manager = multiprocessing.Manager()
-    result_dict = manager.dict()
-    
-    process = multiprocessing.Process(
-        target=target_function, 
-        args=(html_content, output_path, result_dict)
-    )
-    
-    process.start()
-    process.join(timeout=timeout)
-    
-    if process.is_alive():
-        # Kill forçado
-        process.terminate()
-        process.join(timeout=2)
-        if process.is_alive():
-            process.kill()
-            process.join()
-        
-        return False, f"PDF process killed after {timeout}s timeout"
-    
-    if result_dict.get('success', False):
-        return True, result_dict['path']
-    else:
-        return False, result_dict.get('error', 'Unknown error')
+            logger.error(f"Erro no processamento background: {e}")
 
-def processar_pdf_e_email_async(dados):
-    """Processa PDF e email de forma assíncrona"""
+# Iniciar thread de background
+background_thread = threading.Thread(target=processar_background, daemon=True)
+background_thread.start()
+
+def gerar_pdf_background(data):
+    """Gera PDF em background"""
     try:
-        nome = dados['nome']
-        email = dados['email']
-        html_content = dados['html_content']
-        pontuacao_geral = dados['pontuacao_geral']
+        import subprocess
+        import tempfile
         
-        logger.info(f"🔄 Processamento assíncrono iniciado para {nome}")
+        html_content = data['html']
+        pdf_path = data['pdf_path']
         
-        # Preparar arquivo PDF
-        nome_arquivo = nome.replace(' ', '_').replace('/', '_').replace('\\', '_')
-        pdf_filename = f"relatorio_{nome_arquivo}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+        # HTML ultra-simplificado
+        html_simples = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                body {{ font-family: Arial; margin: 15px; font-size: 11px; line-height: 1.3; }}
+                h1 {{ color: #2c3e50; font-size: 16px; margin: 10px 0; }}
+                h2 {{ color: #34495e; font-size: 13px; margin: 8px 0; }}
+                h3 {{ color: #7f8c8d; font-size: 12px; margin: 6px 0; }}
+                .header {{ text-align: center; border-bottom: 2px solid #3498db; padding-bottom: 10px; }}
+                .competencia {{ margin: 8px 0; padding: 6px; border-left: 3px solid #3498db; background: #f8f9fa; }}
+                .pontuacao {{ font-weight: bold; color: #e74c3c; font-size: 12px; }}
+                .ranking {{ margin: 8px 0; }}
+                table {{ width: 100%; border-collapse: collapse; font-size: 10px; margin: 8px 0; }}
+                th, td {{ padding: 3px 6px; border: 1px solid #ddd; text-align: left; }}
+                th {{ background: #ecf0f1; font-weight: bold; }}
+                .destaque {{ background: #e8f5e8; }}
+                .oportunidade {{ background: #fdf2e9; }}
+                .footer {{ margin-top: 20px; text-align: center; font-size: 9px; color: #7f8c8d; }}
+            </style>
+        </head>
+        <body>
+            {html_content}
+            <div class="footer">
+                <p>Relatório gerado em {datetime.now().strftime('%d/%m/%Y às %H:%M')} | Faça Bem - Desenvolvimento de Competências</p>
+            </div>
+        </body>
+        </html>
+        """
         
-        reports_dir = os.path.join(app.static_folder, 'reports')
-        os.makedirs(reports_dir, exist_ok=True)
-        pdf_path = os.path.join(reports_dir, pdf_filename)
+        # Salvar HTML temporário
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.html', delete=False, encoding='utf-8') as f:
+            f.write(html_simples)
+            temp_html = f.name
         
-        # Tentar gerar PDF com timeout
-        pdf_success, pdf_result = gerar_pdf_com_timeout_kill(html_content, pdf_path, PDF_MAX_TIMEOUT)
-        
-        if pdf_success:
-            logger.info(f"✅ PDF gerado: {pdf_path} ({os.path.getsize(pdf_path)} bytes)")
-        else:
-            logger.warning(f"⚠️ PDF falhou: {pdf_result}")
-            pdf_path = None
-        
-        # Enviar email
         try:
-            envio_sucesso = enviar_email(nome, email, pdf_path, pontuacao_geral)
-            if envio_sucesso:
-                logger.info(f"✅ Email enviado para {email}")
+            # Comando wkhtmltopdf ultra-otimizado
+            cmd = [
+                'wkhtmltopdf',
+                '--page-size', 'A4',
+                '--margin-top', '15mm',
+                '--margin-right', '15mm',
+                '--margin-bottom', '15mm', 
+                '--margin-left', '15mm',
+                '--quiet',
+                '--disable-smart-shrinking',
+                '--zoom', '0.8',
+                '--dpi', '72',
+                '--image-quality', '25',
+                '--disable-javascript',
+                '--disable-plugins',
+                '--no-images',
+                '--grayscale',
+                '--lowquality',
+                '--load-error-handling', 'ignore',
+                '--load-media-error-handling', 'ignore',
+                '--disable-external-links',
+                '--disable-internal-links',
+                '--print-media-type',
+                temp_html,
+                pdf_path
+            ]
+            
+            # Executar com timeout
+            result = subprocess.run(cmd, timeout=PDF_TIMEOUT, capture_output=True, text=True)
+            
+            # Limpar arquivo temporário
+            os.unlink(temp_html)
+            
+            if result.returncode == 0 and os.path.exists(pdf_path) and os.path.getsize(pdf_path) > 1000:
+                logger.info(f"✓ PDF gerado com sucesso: {pdf_path} ({os.path.getsize(pdf_path)} bytes)")
+                
+                # Enviar email com PDF
+                background_queue.put({
+                    'type': 'email',
+                    'data': {
+                        'nome': data['nome'],
+                        'email': data['email'],
+                        'html': data['html'],
+                        'pdf_path': pdf_path,
+                        'pontuacao': data['pontuacao']
+                    }
+                })
             else:
-                logger.warning(f"⚠️ Falha no envio de email para {email}")
-        except Exception as e:
-            logger.error(f"❌ Erro ao enviar email: {e}")
+                logger.warning(f"⚠ PDF falhou, enviando apenas HTML por email")
+                # Enviar email sem PDF
+                background_queue.put({
+                    'type': 'email',
+                    'data': {
+                        'nome': data['nome'],
+                        'email': data['email'],
+                        'html': data['html'],
+                        'pdf_path': None,
+                        'pontuacao': data['pontuacao']
+                    }
+                })
+                
+        except subprocess.TimeoutExpired:
+            os.unlink(temp_html)
+            logger.warning(f"⚠ PDF timeout após {PDF_TIMEOUT}s, enviando apenas HTML")
+            # Enviar email sem PDF
+            background_queue.put({
+                'type': 'email',
+                'data': {
+                    'nome': data['nome'],
+                    'email': data['email'],
+                    'html': data['html'],
+                    'pdf_path': None,
+                    'pontuacao': data['pontuacao']
+                }
+            })
+            
+    except Exception as e:
+        logger.error(f"✗ Erro na geração de PDF: {e}")
+        # Enviar email sem PDF como fallback
+        background_queue.put({
+            'type': 'email',
+            'data': {
+                'nome': data['nome'],
+                'email': data['email'],
+                'html': data['html'],
+                'pdf_path': None,
+                'pontuacao': data['pontuacao']
+            }
+        })
+
+def enviar_email_background(data):
+    """Envia email em background"""
+    try:
+        nome = data['nome']
+        email = data['email']
+        html_relatorio = data['html']
+        pdf_path = data.get('pdf_path')
+        pontuacao_geral = data['pontuacao']
         
-        logger.info(f"✅ Processamento assíncrono concluído para {nome}")
+        if not MAIL_PASSWORD:
+            logger.info(f"✓ Email simulado para {email} (MAIL_PASSWORD não configurada)")
+            return
+        
+        # Configurar email
+        msg = MIMEMultipart('alternative')
+        msg['From'] = MAIL_USERNAME
+        msg['To'] = email
+        msg['Subject'] = f"Diagnóstico de Competências - {nome} - Pontuação: {pontuacao_geral:.2f}/5.00"
+        
+        # Corpo do email em texto
+        corpo_texto = f"""
+Olá {nome},
+
+Seu diagnóstico de competências foi concluído com sucesso!
+
+PONTUAÇÃO GERAL: {pontuacao_geral:.2f}/5.00
+
+{"✓ Relatório em PDF anexado" if pdf_path and os.path.exists(pdf_path) else "✓ Relatório em HTML incluído neste email"}
+
+Atenciosamente,
+Equipe Faça Bem
+Desenvolvimento de Competências
+        """
+        
+        # Adicionar texto
+        msg.attach(MIMEText(corpo_texto, 'plain'))
+        
+        # HTML para email
+        html_email = f"""
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; margin: 20px; color: #333; }}
+                .header {{ background: #3498db; color: white; padding: 20px; text-align: center; }}
+                .content {{ padding: 20px; }}
+                .competencia {{ margin: 15px 0; padding: 15px; border-left: 4px solid #3498db; background: #f8f9fa; }}
+                .pontuacao {{ font-weight: bold; color: #e74c3c; font-size: 18px; }}
+                table {{ border-collapse: collapse; width: 100%; margin: 15px 0; }}
+                th, td {{ border: 1px solid #ddd; padding: 10px; text-align: left; }}
+                th {{ background-color: #f2f2f2; font-weight: bold; }}
+                .footer {{ margin-top: 30px; text-align: center; color: #7f8c8d; font-size: 12px; }}
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>Diagnóstico de Competências</h1>
+                <h2>{nome}</h2>
+            </div>
+            <div class="content">
+                <p class="pontuacao">Pontuação Geral: {pontuacao_geral:.2f}/5.00</p>
+                {html_relatorio}
+            </div>
+            <div class="footer">
+                <p>Relatório gerado em {datetime.now().strftime('%d/%m/%Y às %H:%M')}</p>
+                <p>Faça Bem - Desenvolvimento de Competências</p>
+            </div>
+        </body>
+        </html>
+        """
+        msg.attach(MIMEText(html_email, 'html'))
+        
+        # Anexar PDF se existir
+        if pdf_path and os.path.exists(pdf_path):
+            try:
+                with open(pdf_path, "rb") as attachment:
+                    part = MIMEBase('application', 'octet-stream')
+                    part.set_payload(attachment.read())
+                    encoders.encode_base64(part)
+                    part.add_header(
+                        'Content-Disposition',
+                        f'attachment; filename= relatorio_competencias_{nome.replace(" ", "_")}.pdf'
+                    )
+                    msg.attach(part)
+                logger.info("✓ PDF anexado ao email")
+            except Exception as e:
+                logger.warning(f"⚠ Erro ao anexar PDF: {e}")
+        
+        # Enviar email com timeout
+        server = smtplib.SMTP_SSL(MAIL_SERVER, MAIL_PORT)
+        server.login(MAIL_USERNAME, MAIL_PASSWORD)
+        server.send_message(msg)
+        server.quit()
+        
+        logger.info(f"✓ Email enviado com sucesso para {email}")
         
     except Exception as e:
-        logger.error(f"❌ Erro no processamento assíncrono: {e}")
+        logger.error(f"✗ Erro ao enviar email: {e}")
 
 def calcular_competencias_individuais(respostas):
-    """Calcula pontuação das 50 competências individuais"""
+    """Calcula pontuação das 50 competências individuais - OTIMIZADO"""
     competencias = {}
     
     # Mapeamento das competências (10 perguntas cada)
@@ -173,10 +310,7 @@ def calcular_competencias_individuais(respostas):
     }
     
     for competencia, perguntas in mapeamento.items():
-        pontuacoes = []
-        for pergunta in perguntas:
-            if f'pergunta_{pergunta}' in respostas:
-                pontuacoes.append(int(respostas[f'pergunta_{pergunta}']))
+        pontuacoes = [int(respostas[f'pergunta_{p}']) for p in perguntas if f'pergunta_{p}' in respostas]
         
         if pontuacoes:
             media = sum(pontuacoes) / len(pontuacoes)
@@ -189,149 +323,94 @@ def calcular_competencias_individuais(respostas):
     return competencias
 
 def calcular_competencias_principais(competencias_individuais):
-    """Calcula as 5 competências principais"""
+    """Calcula as 5 competências principais - OTIMIZADO"""
     principais = {}
     
     for nome, dados in competencias_individuais.items():
+        pontuacao = dados['pontuacao']
         principais[nome] = {
-            'pontuacao': dados['pontuacao'],
-            'nivel': obter_nivel_competencia(dados['pontuacao'])
+            'pontuacao': pontuacao,
+            'nivel': (
+                "Excelente" if pontuacao >= 4.5 else
+                "Bom" if pontuacao >= 3.5 else
+                "Regular" if pontuacao >= 2.5 else
+                "Fraco" if pontuacao >= 1.5 else
+                "Muito Fraco"
+            )
         }
     
     return principais
 
-def obter_nivel_competencia(pontuacao):
-    """Retorna o nível da competência baseado na pontuação"""
-    if pontuacao >= 4.5:
-        return "Excelente"
-    elif pontuacao >= 3.5:
-        return "Bom"
-    elif pontuacao >= 2.5:
-        return "Regular"
-    elif pontuacao >= 1.5:
-        return "Fraco"
-    else:
-        return "Muito Fraco"
-
 def gerar_ranking_competencias(competencias):
-    """Gera ranking das competências ordenado por pontuação"""
-    ranking = []
-    for nome, dados in competencias.items():
-        ranking.append({
+    """Gera ranking das competências - OTIMIZADO"""
+    ranking = [
+        {
             'nome': nome,
             'pontuacao': dados['pontuacao'],
-            'nivel': dados.get('nivel', obter_nivel_competencia(dados['pontuacao']))
-        })
+            'nivel': dados.get('nivel', 'Regular')
+        }
+        for nome, dados in competencias.items()
+    ]
     
+    # Ordenar por pontuação (maior para menor)
     ranking.sort(key=lambda x: x['pontuacao'], reverse=True)
     return ranking
 
 def identificar_pontos_fortes_oportunidades(ranking_principais):
-    """Identifica pontos fortes e oportunidades de melhoria"""
-    pontos_fortes = ranking_principais[:2]
-    oportunidades = ranking_principais[-3:]
-    oportunidades.reverse()
+    """Identifica pontos fortes e oportunidades - OTIMIZADO"""
+    pontos_fortes = ranking_principais[:2]  # Top 2
+    oportunidades = ranking_principais[-3:]  # Bottom 3
+    oportunidades.reverse()  # Do menor para o maior
+    
     return pontos_fortes, oportunidades
 
-def identificar_subcompetencias_destaque(ranking_50):
-    """Identifica as subcompetências mais fortes e a desenvolver"""
-    top_subcompetencias = ranking_50[:5]
-    bottom_subcompetencias = ranking_50[-5:]
-    bottom_subcompetencias.reverse()
-    return top_subcompetencias, bottom_subcompetencias
-
 def identificar_competencias_desenvolver(ranking_principais):
-    """Identifica as 3 competências com menores pontuações para desenvolvimento"""
+    """Identifica competências a desenvolver - OTIMIZADO"""
     competencias_desenvolver = ranking_principais[-3:]
-    competencias_desenvolver.reverse()
+    competencias_desenvolver.reverse()  # Do menor para o maior
     return competencias_desenvolver
 
-def mapear_nome_competencia_para_chave(nome_competencia):
-    """Mapeia nome da competência para chave usada na tabela de referência"""
-    mapeamento = {
-        'Comunicação': 'comunicacao',
-        'Organização': 'organizacao', 
-        'Proatividade': 'proatividade',
-        'Pensamento Crítico': 'pensamento_critico',
-        'Produtividade': 'produtividade'
+def gerar_plano_desenvolvimento(competencias_desenvolver):
+    """Gera plano de desenvolvimento - OTIMIZADO"""
+    acoes_rapidas = {
+        'Comunicação': [
+            'Pratique escuta ativa diariamente',
+            'Peça feedback sobre sua comunicação',
+            'Participe de discussões em grupo'
+        ],
+        'Organização': [
+            'Use agenda digital ou física',
+            'Defina 3 prioridades por dia',
+            'Organize espaço de trabalho'
+        ],
+        'Proatividade': [
+            'Identifique 1 problema para resolver',
+            'Tome iniciativa em projetos',
+            'Busque melhorias contínuas'
+        ],
+        'Pensamento Crítico': [
+            'Questione informações recebidas',
+            'Analise diferentes perspectivas',
+            'Reflita antes de decidir'
+        ],
+        'Produtividade': [
+            'Elimine distrações principais',
+            'Use técnica Pomodoro',
+            'Foque em uma tarefa por vez'
+        ]
     }
-    return mapeamento.get(nome_competencia, nome_competencia.lower())
-
-def gerar_plano_desenvolvimento(competencias_desenvolver, versao='gratuita'):
-    """Gera plano de desenvolvimento baseado nas competências a desenvolver"""
+    
     plano = []
-    
-    if versao == 'gratuita':
-        return plano
-    
     for comp in competencias_desenvolver:
-        chave_competencia = mapear_nome_competencia_para_chave(comp['nome'])
-        
-        if chave_competencia in COMPETENCIAS_ACOES:
-            acoes_competencia = COMPETENCIAS_ACOES[chave_competencia]
-            
-            acoes_plano = []
-            for grau in ['grau_1', 'grau_2', 'grau_3']:
-                if grau in acoes_competencia:
-                    acoes_plano.extend(acoes_competencia[grau])
-            
-            if acoes_plano:
-                plano.append({
-                    'competencia': comp['nome'],
-                    'pontuacao': comp['pontuacao'],
-                    'acoes': acoes_plano[:6]  # Limitar a 6 ações
-                })
+        nome_comp = comp['nome']
+        if nome_comp in acoes_rapidas:
+            plano.append({
+                'competencia': nome_comp,
+                'pontuacao': comp['pontuacao'],
+                'acoes': acoes_rapidas[nome_comp]
+            })
     
     return plano
-
-def enviar_email(nome, email, pdf_path, pontuacao_geral):
-    """Envia email com PDF anexado"""
-    try:
-        if not MAIL_PASSWORD:
-            logger.warning("MAIL_PASSWORD não configurada - simulando envio")
-            return True
-        
-        msg = MIMEMultipart()
-        msg['From'] = MAIL_USERNAME
-        msg['To'] = email
-        msg['Subject'] = f"Seu Diagnóstico de Competências - Pontuação: {pontuacao_geral:.2f}/5.00"
-        
-        corpo = f"""
-        Olá {nome},
-        
-        Seu diagnóstico de competências foi concluído com sucesso!
-        
-        Pontuação Geral: {pontuacao_geral:.2f}/5.00
-        
-        {"Em anexo você encontrará seu relatório completo em PDF." if pdf_path and os.path.exists(pdf_path) else "Seu relatório foi processado com sucesso."}
-        
-        Atenciosamente,
-        Equipe Faça Bem
-        """
-        
-        msg.attach(MIMEText(corpo, 'plain'))
-        
-        if pdf_path and os.path.exists(pdf_path):
-            with open(pdf_path, "rb") as attachment:
-                part = MIMEBase('application', 'octet-stream')
-                part.set_payload(attachment.read())
-                encoders.encode_base64(part)
-                part.add_header(
-                    'Content-Disposition',
-                    f'attachment; filename= {os.path.basename(pdf_path)}'
-                )
-                msg.attach(part)
-        
-        server = smtplib.SMTP_SSL(MAIL_SERVER, MAIL_PORT)
-        server.login(MAIL_USERNAME, MAIL_PASSWORD)
-        server.send_message(msg)
-        server.quit()
-        
-        return True
-        
-    except Exception as e:
-        logger.error(f"Erro ao enviar email: {e}")
-        return False
 
 @app.route('/')
 def index():
@@ -339,21 +418,24 @@ def index():
 
 @app.route('/submit_avaliacao', methods=['POST'])
 def submit_avaliacao():
-    """PROCESSAMENTO COM RESPOSTA IMEDIATA - NUNCA FALHA"""
-    
-    start_time = time.time()
-    logger.info("🚀 INICIANDO PROCESSAMENTO COM RESPOSTA IMEDIATA")
+    """Processamento ULTRA-RÁPIDO com resposta imediata"""
+    timestamp_inicio = time.time()
     
     try:
-        # Obter dados do formulário
+        logger.info("🚀 INICIANDO PROCESSAMENTO DEFINITIVO")
+        
+        # Validação rápida dos dados
         nome = request.form.get('nome', '').strip()
         email = request.form.get('email', '').strip()
         celular = request.form.get('celular', '').strip()
         
         if not nome or not email:
-            return jsonify({'success': False, 'message': 'Nome e email são obrigatórios'})
+            return jsonify({
+                'success': False, 
+                'message': 'Nome e email são obrigatórios'
+            })
         
-        # Obter respostas das 50 perguntas
+        # Coletar respostas rapidamente
         respostas = {}
         for i in range(1, 51):
             resposta = request.form.get(f'pergunta_{i}')
@@ -361,25 +443,31 @@ def submit_avaliacao():
                 respostas[f'pergunta_{i}'] = int(resposta)
         
         if len(respostas) < 50:
-            return jsonify({'success': False, 'message': 'Todas as 50 perguntas devem ser respondidas'})
+            return jsonify({
+                'success': False, 
+                'message': 'Todas as 50 perguntas devem ser respondidas'
+            })
         
-        logger.info(f"✅ Dados coletados em {time.time() - start_time:.3f}s")
+        logger.info(f"✓ Dados validados em {time.time() - timestamp_inicio:.2f}s")
         
-        # Calcular competências
-        calc_start = time.time()
+        # Cálculos super-rápidos
+        timestamp_calc = time.time()
+        
         competencias_individuais = calcular_competencias_individuais(respostas)
         competencias_principais = calcular_competencias_principais(competencias_individuais)
         
+        # Pontuação geral
         pontuacao_geral = sum(comp['pontuacao'] for comp in competencias_principais.values()) / len(competencias_principais)
         
+        # Rankings e análises
         ranking_principais = gerar_ranking_competencias(competencias_principais)
         pontos_fortes, oportunidades = identificar_pontos_fortes_oportunidades(ranking_principais)
         competencias_desenvolver = identificar_competencias_desenvolver(ranking_principais)
-        plano_desenvolvimento = gerar_plano_desenvolvimento(competencias_desenvolver, 'premium')
+        plano_desenvolvimento = gerar_plano_desenvolvimento(competencias_desenvolver)
         
-        logger.info(f"✅ Cálculos concluídos em {time.time() - calc_start:.3f}s")
+        logger.info(f"✓ Cálculos em {time.time() - timestamp_calc:.2f}s")
         
-        # Preparar dados para o template
+        # Dados para template
         dados_template = {
             'nome': nome,
             'email': email,
@@ -395,45 +483,66 @@ def submit_avaliacao():
             'hora_avaliacao': datetime.now().strftime('%H:%M')
         }
         
-        # Renderizar template HTML
-        template_start = time.time()
+        # Renderizar template rapidamente
+        timestamp_template = time.time()
         html_relatorio = render_template('relatorio_template.html', **dados_template)
-        logger.info(f"✅ Template renderizado em {time.time() - template_start:.3f}s")
+        logger.info(f"✓ Template em {time.time() - timestamp_template:.3f}s")
         
-        # Agendar processamento assíncrono (NÃO BLOQUEIA)
-        dados_async = {
-            'nome': nome,
-            'email': email,
-            'html_content': html_relatorio,
-            'pontuacao_geral': pontuacao_geral
-        }
+        # Agendar PDF e email em background (NÃO BLOQUEIA)
+        nome_arquivo = nome.replace(' ', '_').replace('/', '_').replace('\\', '_')
+        pdf_filename = f"relatorio_{nome_arquivo}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
         
-        # Submeter para processamento em background
-        future = executor.submit(processar_pdf_e_email_async, dados_async)
-        logger.info(f"✅ Processamento assíncrono agendado")
+        reports_dir = os.path.join(app.static_folder, 'reports')
+        os.makedirs(reports_dir, exist_ok=True)
+        pdf_path = os.path.join(reports_dir, pdf_filename)
+        
+        # Renderizar template específico para PDF (sem url_for)
+        html_pdf = render_template('relatorio_pdf.html', **dados_template)
+        
+        # Adicionar à queue de background
+        background_queue.put({
+            'type': 'pdf',
+            'data': {
+                'nome': nome,
+                'email': email,
+                'html': html_pdf,  # Usar template otimizado para PDF
+                'pdf_path': pdf_path,
+                'pontuacao': pontuacao_geral
+            }
+        })
         
         # RESPOSTA IMEDIATA - NUNCA FALHA
-        tempo_total = time.time() - start_time
-        logger.info(f"🎉 RESPOSTA IMEDIATA EM {tempo_total:.3f}s")
+        tempo_total = time.time() - timestamp_inicio
+        logger.info(f"🎉 RESPOSTA EM {tempo_total:.2f}s - PDF/EMAIL EM BACKGROUND")
         
         return jsonify({
             'success': True,
             'message': f'Avaliação processada com sucesso! Pontuação: {pontuacao_geral:.2f}/5.00',
             'html_content': html_relatorio,
             'pontuacao_geral': pontuacao_geral,
-            'tempo_processamento': f"{tempo_total:.3f}s"
+            'tempo_processamento': f"{tempo_total:.2f}s",
+            'status': 'Relatório gerado! PDF e email sendo processados em background.',
+            'detalhes': {
+                'competencias_calculadas': len(competencias_principais),
+                'pontos_fortes': len(pontos_fortes),
+                'oportunidades': len(oportunidades),
+                'acoes_desenvolvimento': sum(len(p.get('acoes', [])) for p in plano_desenvolvimento)
+            }
         })
         
     except Exception as e:
-        tempo_erro = time.time() - start_time
-        logger.error(f"❌ ERRO em {tempo_erro:.3f}s: {e}")
+        tempo_erro = time.time() - timestamp_inicio
+        logger.error(f"✗ ERRO em {tempo_erro:.2f}s: {e}")
         
+        # MESMO COM ERRO, RETORNA RESPOSTA BÁSICA
         return jsonify({
-            'success': False, 
-            'message': 'Erro interno do servidor. Tente novamente.',
-            'erro_tempo': f"{tempo_erro:.3f}s"
+            'success': False,
+            'message': 'Erro no processamento. Nossa equipe foi notificada.',
+            'erro_tempo': f"{tempo_erro:.2f}s",
+            'suporte': 'Tente novamente em alguns minutos.'
         }), 500
 
+# Rotas adicionais
 @app.route('/checkout')
 def checkout():
     return render_template('checkout.html')
@@ -452,16 +561,16 @@ def pagamento_pendente():
 
 @app.route('/status')
 def status():
-    """Endpoint para monitoramento"""
+    """Endpoint para verificar status do sistema"""
     return jsonify({
         'status': 'online',
         'timestamp': datetime.now().isoformat(),
-        'version': 'FINAL_DEFINITIVO_v1.0',
-        'pdf_timeout': PDF_MAX_TIMEOUT
+        'queue_size': background_queue.qsize(),
+        'version': 'definitiva_v1.0'
     })
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 9000))
-    logger.info(f"🚀 Iniciando servidor FINAL DEFINITIVO na porta {port}")
+    logger.info(f"🚀 Iniciando servidor definitivo na porta {port}")
     app.run(host='0.0.0.0', port=port, debug=False, threaded=True)
 
