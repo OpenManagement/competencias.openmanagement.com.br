@@ -22,8 +22,8 @@ COPY . /app
 # Instala os pacotes Python necessários com base no requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Expõe a porta usada pelo Railway dinamicamente
+# Expõe a porta usada pelo Railway
 EXPOSE 8080
 
-# Comando corrigido para usar a porta fornecida pelo Railway
-CMD exec gunicorn --bind 0.0.0.0:${PORT:-8080} app:app
+# Comando corrigido para executar o gunicorn via shell interpretando $PORT
+CMD ["sh", "-c", "exec gunicorn --bind 0.0.0.0:${PORT:-8080} app:app"]
