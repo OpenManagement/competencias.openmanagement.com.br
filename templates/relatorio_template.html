@@ -641,9 +641,9 @@
                 <div class="competencia-info">
                     <div class="competencia-nome">{{ comp.emoji }} {{ comp.nome }}</div>
                 </div>
-                <div class="competencia-pontuacao">{{ "%.1f"|format(comp.pontuacao) }}/5.0</div>
+                <div class="competencia-pontuacao">{{ "%.1f"|format(comp.media) }}/5.0</div>
                 <div class="likert-bar">
-                    <div class="likert-fill" style="width: {{ (comp.pontuacao / 5 * 100)|round }}%"></div>
+                    <div class="likert-fill" style="width: {{ (comp.media / 5 * 100)|round }}%"></div>
                 </div>
             </div>
             {% endfor %}
@@ -675,7 +675,7 @@
             <!-- Listagem das 3 piores competências -->
             <div class="competencias-desenvolver">
                 {% for comp in competencias_desenvolver %}
-                <p><strong>{{ comp.nome }}:</strong> {{ "%.2f"|format(comp.pontuacao) }}/5</p>
+                <p><strong>{{ comp.nome }}:</strong> {{ "%.2f"|format(comp.media) }}/5</p>
                 {% endfor %}
             </div>
             
@@ -734,7 +734,7 @@
                         {% for comp in pontos_fortes %}
                         <li>
                             <span>{{ comp.nome }}</span>
-                            <span><strong>{{ "%.1f"|format(comp.pontuacao) }}/5.0</strong></span>
+                            <span><strong>{{ "%.1f"|format(comp.media) }}/5.0</strong></span>
                         </li>
                         {% endfor %}
                     </ul>
@@ -747,7 +747,7 @@
                         {% for comp in oportunidades %}
                         <li>
                             <span>{{ comp.nome }}</span>
-                            <span><strong>{{ "%.1f"|format(comp.pontuacao) }}/5.0</strong></span>
+                            <span><strong>{{ "%.1f"|format(comp.media) }}/5.0</strong></span>
                         </li>
                         {% endfor %}
                     </ul>
