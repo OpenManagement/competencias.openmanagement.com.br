@@ -589,24 +589,6 @@ def submit_avaliacao():
             html_relatorio
         )
         
-        # Simplificar HTML para PDF - remover scripts e elementos que podem causar timeout
-        html_relatorio = re.sub(r'<script[^>]*>.*?</script>', '', html_relatorio, flags=re.DOTALL)
-        html_relatorio = re.sub(r'<link[^>]*rel=["\']stylesheet["\'][^>]*>', '', html_relatorio)
-        html_relatorio = re.sub(r'@import[^;]*;', '', html_relatorio)
-        
-        # Adicionar estilos inline básicos para manter formatação
-        html_relatorio = html_relatorio.replace('<head>', '''<head>
-        <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .container { max-width: 800px; margin: 0 auto; }
-        .header { text-align: center; margin-bottom: 30px; }
-        .section { margin-bottom: 20px; }
-        .competencia { margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; }
-        .score { font-weight: bold; color: #2c5aa0; }
-        .chart { margin: 20px 0; }
-        </style>''')
-        
-        
         # Gerar PDF e salvar em pasta acessível
         pdf_path = None
         try:
@@ -620,7 +602,7 @@ def submit_avaliacao():
             
             pdf_path = os.path.join(reports_dir, pdf_filename)
             
-            # Opções para geração do PDF otimizadas para evitar timeout
+            # Opções para geração do PDF com alta fidelidade
             options = {
                 'page-size': 'A4',
                 'margin-top': '0.75in',
@@ -632,11 +614,15 @@ def submit_avaliacao():
                 'enable-local-file-access': None,
                 'disable-smart-shrinking': '',
                 'print-media-type': '',
+                'enable-javascript': '',
+                'javascript-delay': '2000',  # Aumentado para garantir carregamento completo
                 'images': '',
+                'enable-external-links': '',
+                'enable-internal-links': '',
                 'zoom': '1.0',
-                'dpi': '150',  # Reduzido para melhor performance
-                'image-dpi': '150',  # Reduzido para melhor performance
-                'image-quality': '80',  # Reduzido para melhor performance
+                'dpi': '300',
+                'image-dpi': '300',
+                'image-quality': '100',
                 'footer-line': '',
                 'quiet': '',
                 'load-error-handling': 'ignore',
@@ -646,16 +632,11 @@ def submit_avaliacao():
                 'background': '',
                 'lowquality': False,
                 'grayscale': False,
-                'orientation': 'Portrait',
-                'disable-external-links': '',  # Evitar carregamento de recursos externos
-                'disable-forms': '',  # Desabilitar formulários para melhor performance
-                'disable-javascript': '',  # Desabilitar JS para evitar timeout
-                'no-stop-slow-scripts': ''  # Não parar scripts lentos
+                'orientation': 'Portrait'
             }
             
-            # Gerar PDF com tratamento de exceções robusto
+            # Gerar PDF
             pdfkit.from_string(html_relatorio, pdf_path, options=options)
-            logger.info(f"PDF gerado: {pdf_path}")
             
             # Verificar se o arquivo foi criado e tem tamanho válido
             if os.path.exists(pdf_path) and os.path.getsize(pdf_path) > 0:
@@ -664,23 +645,25 @@ def submit_avaliacao():
                 logger.info(f"[{timestamp}] PDF de Diagnóstico formatado conforme HTML — OK")
             else:
                 raise Exception("Arquivo PDF não foi criado ou está vazio")
-                
+            
         except Exception as e:
-            logger.error("Erro PDF/e-mail", exc_info=True)
-            return jsonify({"error": "Erro interno ao gerar PDF ou enviar e-mail"}), 500
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            logger.error(f"[{timestamp}] Erro ao gerar PDF: {e}")
+            pdf_path = None
         
         # Tentar enviar email apenas se PDF foi gerado com sucesso
         if pdf_path and os.path.exists(pdf_path) and os.path.getsize(pdf_path) > 0:
             try:
                 envio_sucesso = enviar_email(nome, email, pdf_path, pontuacao_geral)
                 if envio_sucesso:
-                    logger.info(f"E-mail enviado: {email}")
+                    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    logger.info(f"[{timestamp}] Email enviado com sucesso para {email}")
                 else:
                     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     logger.warning(f"[{timestamp}] Falha no envio de email para {email}")
             except Exception as e:
-                logger.error("Erro PDF/e-mail", exc_info=True)
-                return jsonify({"error": "Erro interno ao gerar PDF ou enviar e-mail"}), 500
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                logger.error(f"[{timestamp}] Erro ao enviar email: {e}")
         else:
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             logger.error(f"[{timestamp}] Não foi possível enviar email - PDF não gerado ou inválido")
