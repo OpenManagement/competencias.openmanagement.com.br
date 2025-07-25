@@ -1,22 +1,16 @@
- from flask import Flask, render_template, request, jsonify, url_for, session, redirect
- import logging
- from datetime import datetime
- import smtplib
- from email.mime.multipart import MIMEMultipart
- from email.mime.text import MIMEText
- from email.mime.base import MIMEBase
- from email import encoders
- import pdfkit
--import os
-+import os
-
-+# Configuração do wkhtmltopdf instalado via apt-get no container
-+path_wkhtmltopdf = '/usr/bin/wkhtmltopdf'
-+config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)
-
- import mercadopago
- from tabela_referencia_competencias import COMPETENCIAS_ACOES
- from dotenv import load_dotenv
+from flask import Flask, render_template, request, jsonify, url_for, session, redirect
+import logging
+from datetime import datetime
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
+import pdfkit
+import os
+import mercadopago
+from tabela_referencia_competencias import COMPETENCIAS_ACOES
+from dotenv import load_dotenv
 
 # Carregar variáveis de ambiente do arquivo .env
 load_dotenv()
@@ -120,6 +114,9 @@ CATEGORIAS_COMPETENCIAS = {
 
 def calcular_competencias_individuais(respostas):
     """Calcula pontuação de cada uma das 50 competências individuais"""
+    logger.info("=== CALCULANDO COMPETÊNCIAS INDIVIDUAIS ===")
+    logger.info(f"Respostas recebidas: {len(respostas) if respostas else 0}")
+    
     competencias_individuais = {}
     
     for key, value in respostas.items():
@@ -131,17 +128,38 @@ def calcular_competencias_individuais(respostas):
                     'categoria': CATEGORIAS_COMPETENCIAS[key[:2]],
                     'pontuacao': valor
                 }
+                logger.debug(f"Competência processada: {key} = {valor} ({COMPETENCIAS_MAPEAMENTO[key]})")
             except (ValueError, TypeError):
                 logger.warning(f"Valor inválido para {key}: {value}")
                 continue
+    
+    logger.info(f"✅ Competências individuais calculadas: {len(competencias_individuais)}")
+    if len(competencias_individuais) < 50:
+        logger.warning(f"⚠️ Esperadas 50 competências, mas apenas {len(competencias_individuais)} foram processadas")
+        
+        # Verificar quais competências estão faltando
+        competencias_esperadas = set(COMPETENCIAS_MAPEAMENTO.keys())
+        competencias_processadas = set(competencias_individuais.keys())
+        competencias_faltando = competencias_esperadas - competencias_processadas
+        
+        if competencias_faltando:
+            logger.warning(f"Competências faltando: {list(competencias_faltando)[:10]}...")  # Mostrar apenas as primeiras 10
     
     return competencias_individuais
 
 def gerar_ranking_50_competencias(competencias_individuais):
     """Gera ranking das 50 competências ordenadas por pontuação"""
+    logger.info("=== GERANDO RANKING DAS 50 COMPETÊNCIAS ===")
+    logger.info(f"Competências individuais recebidas: {len(competencias_individuais) if competencias_individuais else 0}")
+    
+    if not competencias_individuais:
+        logger.error("❌ Nenhuma competência individual fornecida!")
+        return []
+    
     ranking = []
     
     for key, comp in competencias_individuais.items():
+        logger.debug(f"Processando competência: {key} = {comp}")
         ranking.append({
             'nome': comp['nome'],
             'categoria': comp['categoria'],
@@ -150,6 +168,9 @@ def gerar_ranking_50_competencias(competencias_individuais):
     
     # Ordenar por pontuação (decrescente) e depois por nome (alfabética)
     ranking.sort(key=lambda x: (-x['pontuacao'], x['nome']))
+    
+    logger.info(f"✅ Ranking gerado com {len(ranking)} competências")
+    logger.info(f"Top 5 competências: {[f\"{r['nome']}: {r['pontuacao']}\" for r in ranking[:5]]}")
     
     return ranking
 
@@ -295,7 +316,7 @@ def enviar_email(nome, email_destino, pdf_path, pontuacao_geral):
     """Envia email com relatório em anexo usando configurações SMTP Zoho"""
     try:
         # Configurações do SMTP Zoho Mail - Exatamente conforme especificado
-        smtp_server = os.getenv("MAIL_SERVER")
+        smtp_server = os.getenv("SMTP_SERVER")
         smtp_port = int(os.getenv("MAIL_PORT", 465))  # Default: 465
         email_usuario = os.getenv("MAIL_USERNAME")
         email_senha = os.getenv("MAIL_PASSWORD")
@@ -376,9 +397,11 @@ consultoria@openmanagement.com.br"""
             part = MIMEBase('application', 'octet-stream')
             part.set_payload(attachment.read())
             encoders.encode_base64(part)
+            # Usar o nome do arquivo original do PDF
+            pdf_filename = os.path.basename(pdf_path)
             part.add_header(
                 'Content-Disposition',
-                f'attachment; filename="Relatorio_Competencias_{nome.replace(" ", "_")}.pdf"'
+                f'attachment; filename="{pdf_filename}"'
             )
             msg.attach(part)
         
@@ -420,6 +443,18 @@ def checkout_page():
 def checkout():
     """Cria preferência de pagamento no Mercado Pago"""
     try:
+        logger.info("=== INICIANDO CHECKOUT PREMIUM ===")
+        logger.info(f"MP_ACCESS_TOKEN configurado: {'Sim' if os.getenv('MP_ACCESS_TOKEN') else 'Não'}")
+        logger.info(f"MP_PUBLIC_KEY configurado: {'Sim' if os.getenv('MP_PUBLIC_KEY') else 'Não'}")
+        
+        # Verificar se as variáveis estão configuradas
+        if not os.getenv('MP_ACCESS_TOKEN'):
+            logger.error("MP_ACCESS_TOKEN não configurado!")
+            return jsonify({
+                'success': False,
+                'message': 'Configuração de pagamento incompleta'
+            }), 500
+        
         # Dados do produto Premium
         preference_data = {
             "items": [
@@ -438,12 +473,18 @@ def checkout():
             "external_reference": f"premium_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         }
         
+        logger.info(f"Dados da preferência: {preference_data}")
+        
         # Criar preferência
+        logger.info("Criando preferência no Mercado Pago...")
         preference_response = mp.preference().create(preference_data)
+        
+        logger.info(f"Resposta do MP: {preference_response}")
         
         if preference_response["status"] == 201:
             preference = preference_response["response"]
-            logger.info(f"Preferência criada: {preference['id']}")
+            logger.info(f"✅ Preferência criada com sucesso: {preference['id']}")
+            logger.info(f"Init point: {preference['init_point']}")
             
             return jsonify({
                 'success': True,
@@ -451,17 +492,21 @@ def checkout():
                 'init_point': preference['init_point']
             })
         else:
-            logger.error(f"Erro ao criar preferência MP: {preference_response}")
+            logger.error(f"❌ Erro ao criar preferência MP - Status: {preference_response.get('status')}")
+            logger.error(f"Resposta completa: {preference_response}")
             return jsonify({
                 'success': False,
-                'message': 'Erro ao processar pagamento'
+                'message': 'Erro ao processar pagamento - resposta inválida do MP'
             }), 500
         
     except Exception as e:
-        logger.error(f"Erro ao criar preferência MP: {e}")
+        logger.error(f"❌ ERRO CRÍTICO no checkout: {str(e)}")
+        logger.error(f"Tipo do erro: {type(e).__name__}")
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
         return jsonify({
             'success': False,
-            'message': 'Erro ao processar pagamento'
+            'message': f'Erro ao processar pagamento: {str(e)}'
         }), 500
 
 @app.route('/mp/webhook', methods=['POST'])
