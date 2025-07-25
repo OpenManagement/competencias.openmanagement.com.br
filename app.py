@@ -170,7 +170,10 @@ def gerar_ranking_50_competencias(competencias_individuais):
     ranking.sort(key=lambda x: (-x['pontuacao'], x['nome']))
     
     logger.info(f"✅ Ranking gerado com {len(ranking)} competências")
-    logger.info(f"Top 5 competências: {[f\"{r['nome']}: {r['pontuacao']}\" for r in ranking[:5]]}")
+    # Formata a lista sem usar escapes em f‑string
+    top5_list = [f"{r['nome']}: {r['pontuacao']}" for r in ranking[:5]]
+    logger.info(f"Top 5 competências: {top5_list}")
+
     
     return ranking
 
