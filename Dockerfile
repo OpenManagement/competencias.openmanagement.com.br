@@ -1,3 +1,4 @@
+# v1.1 - Forçar deploy com PORT resolvido corretamente no Railway
 FROM python:3.11-slim
 
 # Instalar dependências do sistema necessárias para o wkhtmltopdf funcionar corretamente
