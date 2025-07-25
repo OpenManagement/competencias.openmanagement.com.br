@@ -1,30 +1,28 @@
-# v1.1 - Forçar deploy com PORT resolvido corretamente no Railway
+# 1) Imagem base leve
 FROM python:3.11-slim
 
-# Instalar dependências do sistema necessárias para o wkhtmltopdf funcionar corretamente
+# 2) Instala dependências do sistema
+#    Ajuste aqui caso seu Dockerfile original tenha outras libs além de wkhtmltopdf
 RUN apt-get update && \
-    apt-get install -y \
-    wget \
-    xfonts-base \
-    libjpeg62-turbo \
-    libxrender1 \
-    libxtst6 \
-    libxext6 \
-    libfontconfig1 \
-    wkhtmltopdf && \
-    apt-get clean
+    apt-get install -y --no-install-recommends \
+        build-essential \
+        wkhtmltopdf \
+        libxrender1 \
+        libx11-6 \
+    && rm -rf /var/lib/apt/lists/*
 
-# Define o diretório de trabalho no container
+# 3) Cria e define diretório de trabalho
 WORKDIR /app
 
-# Copia todos os arquivos do projeto para dentro do container
-COPY . /app
-
-# Instala os pacotes Python necessários com base no requirements.txt
+# 4) Copia e instala dependências Python
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Expõe a porta usada pelo Railway
+# 5) Copia o restante do código
+COPY . .
+
+# 6) Porta exposta (documentação; Railway ignora mas é bom manter)
 EXPOSE 8080
 
-# Comando corrigido para executar o gunicorn via shell interpretando $PORT
-CMD ["sh", "-c", "exec gunicorn --bind 0.0.0.0:${PORT:-8080} app:app"]
+# 7) Start em shell form para expandir $PORT corretamente
+CMD exec gunicorn app:app --bind 0.0.0.0:${PORT:-8080}
