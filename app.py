@@ -1,16 +1,22 @@
-from flask import Flask, render_template, request, jsonify, url_for, session, redirect
-import logging
-from datetime import datetime
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.mime.base import MIMEBase
-from email import encoders
-import pdfkit
-import os
-import mercadopago
-from tabela_referencia_competencias import COMPETENCIAS_ACOES
-from dotenv import load_dotenv
+ from flask import Flask, render_template, request, jsonify, url_for, session, redirect
+ import logging
+ from datetime import datetime
+ import smtplib
+ from email.mime.multipart import MIMEMultipart
+ from email.mime.text import MIMEText
+ from email.mime.base import MIMEBase
+ from email import encoders
+ import pdfkit
+-import os
++import os
+
++# Configuração do wkhtmltopdf instalado via apt-get no container
++path_wkhtmltopdf = '/usr/bin/wkhtmltopdf'
++config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)
+
+ import mercadopago
+ from tabela_referencia_competencias import COMPETENCIAS_ACOES
+ from dotenv import load_dotenv
 
 # Carregar variáveis de ambiente do arquivo .env
 load_dotenv()
