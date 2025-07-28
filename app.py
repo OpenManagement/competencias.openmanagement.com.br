@@ -8,6 +8,7 @@ from email.mime.base import MIMEBase
 from email import encoders
 import pdfkit
 import os
+print("DEBUG MP_ACCESS_TOKEN:", repr(os.getenv("MP_ACCESS_TOKEN")))
 import mercadopago
 from tabela_referencia_competencias import COMPETENCIAS_ACOES
 
