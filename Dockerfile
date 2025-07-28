@@ -1,28 +1,24 @@
-# --- Início do Dockerfile ---
 FROM python:3.11-slim
 
-# 1) Dependências do sistema (inclua aqui tudo que seu projeto precisar)
+# Instalar dependências do sistema (inclui o wkhtmltopdf e libs gráficas necessárias)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        build-essential \
-        wkhtmltopdf \
-        libxrender1 \
-        libx11-6 \
-    && rm -rf /var/lib/apt/lists/*
+    apt-get install -y wkhtmltopdf build-essential libssl-dev libffi-dev \
+    python3-dev libxrender1 libfontconfig1 libxext6 libglib2.0-0 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# 2) Definição do diretório de trabalho
+# Definir diretório de trabalho
 WORKDIR /app
 
-# 3) Copia e instala requisitos Python
+# Copiar requirements.txt e instalar dependências Python
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 4) Copia todo o restante do seu código
+# Copiar o restante do código do app
 COPY . .
 
-# 5) (opcional, documentacional) expõe a porta
-EXPOSE 8080
+# Configurar a porta padrão (será sobrescrita pelo Railway)
+ENV PORT=9000
 
-# 6) Shell form do CMD para expandir $PORT
-CMD sh -lc "exec gunicorn app:app --bind 0.0.0.0:${PORT:-8080}"
-# --- Fim do Dockerfile ---
+# Comando padrão para iniciar o app
+CMD ["python", "app.py"]

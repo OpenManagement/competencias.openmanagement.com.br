@@ -10,17 +10,9 @@ import pdfkit
 import os
 import mercadopago
 from tabela_referencia_competencias import COMPETENCIAS_ACOES
-from dotenv import load_dotenv
-
-# Carregar variáveis de ambiente do arquivo .env
-load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
-
-# Configuração do wkhtmltopdf para Railway
-path_wkhtmltopdf = os.path.join(os.getcwd(), 'bin', 'wkhtmltopdf')
-config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)
 
 # Configuração do Mercado Pago via variáveis de ambiente
 mp = mercadopago.SDK(os.getenv("MP_ACCESS_TOKEN"))
@@ -114,9 +106,6 @@ CATEGORIAS_COMPETENCIAS = {
 
 def calcular_competencias_individuais(respostas):
     """Calcula pontuação de cada uma das 50 competências individuais"""
-    logger.info("=== CALCULANDO COMPETÊNCIAS INDIVIDUAIS ===")
-    logger.info(f"Respostas recebidas: {len(respostas) if respostas else 0}")
-    
     competencias_individuais = {}
     
     for key, value in respostas.items():
@@ -128,38 +117,17 @@ def calcular_competencias_individuais(respostas):
                     'categoria': CATEGORIAS_COMPETENCIAS[key[:2]],
                     'pontuacao': valor
                 }
-                logger.debug(f"Competência processada: {key} = {valor} ({COMPETENCIAS_MAPEAMENTO[key]})")
             except (ValueError, TypeError):
                 logger.warning(f"Valor inválido para {key}: {value}")
                 continue
-    
-    logger.info(f"✅ Competências individuais calculadas: {len(competencias_individuais)}")
-    if len(competencias_individuais) < 50:
-        logger.warning(f"⚠️ Esperadas 50 competências, mas apenas {len(competencias_individuais)} foram processadas")
-        
-        # Verificar quais competências estão faltando
-        competencias_esperadas = set(COMPETENCIAS_MAPEAMENTO.keys())
-        competencias_processadas = set(competencias_individuais.keys())
-        competencias_faltando = competencias_esperadas - competencias_processadas
-        
-        if competencias_faltando:
-            logger.warning(f"Competências faltando: {list(competencias_faltando)[:10]}...")  # Mostrar apenas as primeiras 10
     
     return competencias_individuais
 
 def gerar_ranking_50_competencias(competencias_individuais):
     """Gera ranking das 50 competências ordenadas por pontuação"""
-    logger.info("=== GERANDO RANKING DAS 50 COMPETÊNCIAS ===")
-    logger.info(f"Competências individuais recebidas: {len(competencias_individuais) if competencias_individuais else 0}")
-    
-    if not competencias_individuais:
-        logger.error("❌ Nenhuma competência individual fornecida!")
-        return []
-    
     ranking = []
     
     for key, comp in competencias_individuais.items():
-        logger.debug(f"Processando competência: {key} = {comp}")
         ranking.append({
             'nome': comp['nome'],
             'categoria': comp['categoria'],
@@ -168,12 +136,6 @@ def gerar_ranking_50_competencias(competencias_individuais):
     
     # Ordenar por pontuação (decrescente) e depois por nome (alfabética)
     ranking.sort(key=lambda x: (-x['pontuacao'], x['nome']))
-    
-    logger.info(f"✅ Ranking gerado com {len(ranking)} competências")
-    # Formata a lista sem usar escapes em f‑string
-    top5_list = [f"{r['nome']}: {r['pontuacao']}" for r in ranking[:5]]
-    logger.info(f"Top 5 competências: {top5_list}")
-
     
     return ranking
 
@@ -319,7 +281,7 @@ def enviar_email(nome, email_destino, pdf_path, pontuacao_geral):
     """Envia email com relatório em anexo usando configurações SMTP Zoho"""
     try:
         # Configurações do SMTP Zoho Mail - Exatamente conforme especificado
-        smtp_server = os.getenv("SMTP_SERVER")
+        smtp_server = os.getenv("MAIL_SERVER")
         smtp_port = int(os.getenv("MAIL_PORT", 465))  # Default: 465
         email_usuario = os.getenv("MAIL_USERNAME")
         email_senha = os.getenv("MAIL_PASSWORD")
@@ -400,11 +362,9 @@ consultoria@openmanagement.com.br"""
             part = MIMEBase('application', 'octet-stream')
             part.set_payload(attachment.read())
             encoders.encode_base64(part)
-            # Usar o nome do arquivo original do PDF
-            pdf_filename = os.path.basename(pdf_path)
             part.add_header(
                 'Content-Disposition',
-                f'attachment; filename="{pdf_filename}"'
+                f'attachment; filename="Relatorio_Competencias_{nome.replace(" ", "_")}.pdf"'
             )
             msg.attach(part)
         
@@ -432,32 +392,10 @@ consultoria@openmanagement.com.br"""
 def index():
     return render_template('index.html')
 
-@app.route('/checkout')
-def checkout_page():
-    """Página de checkout"""
-    return render_template('checkout.html', 
-                         preco=29.90, 
-                         nome="", 
-                         email="",
-                         public_key=PUBLIC_KEY,
-                         preference_id="")
-
 @app.route('/checkout', methods=['POST'])
 def checkout():
     """Cria preferência de pagamento no Mercado Pago"""
     try:
-        logger.info("=== INICIANDO CHECKOUT PREMIUM ===")
-        logger.info(f"MP_ACCESS_TOKEN configurado: {'Sim' if os.getenv('MP_ACCESS_TOKEN') else 'Não'}")
-        logger.info(f"MP_PUBLIC_KEY configurado: {'Sim' if os.getenv('MP_PUBLIC_KEY') else 'Não'}")
-        
-        # Verificar se as variáveis estão configuradas
-        if not os.getenv('MP_ACCESS_TOKEN'):
-            logger.error("MP_ACCESS_TOKEN não configurado!")
-            return jsonify({
-                'success': False,
-                'message': 'Configuração de pagamento incompleta'
-            }), 500
-        
         # Dados do produto Premium
         preference_data = {
             "items": [
@@ -476,18 +414,12 @@ def checkout():
             "external_reference": f"premium_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         }
         
-        logger.info(f"Dados da preferência: {preference_data}")
-        
         # Criar preferência
-        logger.info("Criando preferência no Mercado Pago...")
         preference_response = mp.preference().create(preference_data)
-        
-        logger.info(f"Resposta do MP: {preference_response}")
         
         if preference_response["status"] == 201:
             preference = preference_response["response"]
-            logger.info(f"✅ Preferência criada com sucesso: {preference['id']}")
-            logger.info(f"Init point: {preference['init_point']}")
+            logger.info(f"Preferência criada: {preference['id']}")
             
             return jsonify({
                 'success': True,
@@ -495,21 +427,17 @@ def checkout():
                 'init_point': preference['init_point']
             })
         else:
-            logger.error(f"❌ Erro ao criar preferência MP - Status: {preference_response.get('status')}")
-            logger.error(f"Resposta completa: {preference_response}")
+            logger.error(f"Erro ao criar preferência MP: {preference_response}")
             return jsonify({
                 'success': False,
-                'message': 'Erro ao processar pagamento - resposta inválida do MP'
+                'message': 'Erro ao processar pagamento'
             }), 500
         
     except Exception as e:
-        logger.error(f"❌ ERRO CRÍTICO no checkout: {str(e)}")
-        logger.error(f"Tipo do erro: {type(e).__name__}")
-        import traceback
-        logger.error(f"Traceback: {traceback.format_exc()}")
+        logger.error(f"Erro ao criar preferência MP: {e}")
         return jsonify({
             'success': False,
-            'message': f'Erro ao processar pagamento: {str(e)}'
+            'message': 'Erro ao processar pagamento'
         }), 500
 
 @app.route('/mp/webhook', methods=['POST'])
@@ -654,23 +582,30 @@ def submit_avaliacao():
         
         # Substituir URLs relativos por caminhos absolutos para o PDF
         import re
-        # Usar caminhos absolutos locais para recursos estáticos
-        current_dir = os.path.abspath('.')
-        static_dir = os.path.join(current_dir, 'static')
-        
-        # Substituir referências de imagens para caminhos absolutos
+        base_url = request.url_root
         html_relatorio = re.sub(
-            r'src="/static/([^"]*)"',
-            lambda m: f'src="file://{static_dir}/{m.group(1)}"',
+            r'src="([^"]*)"',
+            lambda m: f'src="{base_url.rstrip("/")}{m.group(1)}"' if m.group(1).startswith('/') else m.group(0),
             html_relatorio
         )
         
-        # Substituir url_for para static files
-        html_relatorio = re.sub(
-            r"url_for\('static', filename='([^']*)'\)",
-            lambda m: f'"file://{static_dir}/{m.group(1)}"',
-            html_relatorio
-        )
+        # Simplificar HTML para PDF - remover scripts e elementos que podem causar timeout
+        html_relatorio = re.sub(r'<script[^>]*>.*?</script>', '', html_relatorio, flags=re.DOTALL)
+        html_relatorio = re.sub(r'<link[^>]*rel=["\']stylesheet["\'][^>]*>', '', html_relatorio)
+        html_relatorio = re.sub(r'@import[^;]*;', '', html_relatorio)
+        
+        # Adicionar estilos inline básicos para manter formatação
+        html_relatorio = html_relatorio.replace('<head>', '''<head>
+        <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .section { margin-bottom: 20px; }
+        .competencia { margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; }
+        .score { font-weight: bold; color: #2c5aa0; }
+        .chart { margin: 20px 0; }
+        </style>''')
+        
         
         # Gerar PDF e salvar em pasta acessível
         pdf_path = None
@@ -685,7 +620,7 @@ def submit_avaliacao():
             
             pdf_path = os.path.join(reports_dir, pdf_filename)
             
-            # Opções otimizadas para geração do PDF idêntica ao relatório virtual
+            # Opções para geração do PDF otimizadas para evitar timeout
             options = {
                 'page-size': 'A4',
                 'margin-top': '0.75in',
@@ -699,28 +634,28 @@ def submit_avaliacao():
                 'print-media-type': '',
                 'images': '',
                 'zoom': '1.0',
-                'dpi': '300',  # Alta qualidade para PDF profissional
-                'image-dpi': '300',  # Alta qualidade para imagens
-                'image-quality': '100',  # Máxima qualidade de imagem
+                'dpi': '150',  # Reduzido para melhor performance
+                'image-dpi': '150',  # Reduzido para melhor performance
+                'image-quality': '80',  # Reduzido para melhor performance
+                'footer-line': '',
                 'quiet': '',
                 'load-error-handling': 'ignore',
                 'load-media-error-handling': 'ignore',
                 'disable-plugins': '',
                 'minimum-font-size': '12',
                 'background': '',
+                'lowquality': False,
+                'grayscale': False,
                 'orientation': 'Portrait',
-                'disable-javascript': '',
-                'no-stop-slow-scripts': '',
-                'disable-external-links': '',
-                'disable-internal-links': '',
-                'enable-forms': '',
-                'lowquality': False,  # Garantir alta qualidade
-                'grayscale': False,   # Manter cores
-                'cookie-jar': ''
+                'disable-external-links': '',  # Evitar carregamento de recursos externos
+                'disable-forms': '',  # Desabilitar formulários para melhor performance
+                'disable-javascript': '',  # Desabilitar JS para evitar timeout
+                'no-stop-slow-scripts': ''  # Não parar scripts lentos
             }
             
-            # Gerar PDF
-            pdfkit.from_string(html_relatorio, pdf_path, options=options, configuration=config)
+            # Gerar PDF com tratamento de exceções robusto
+            pdfkit.from_string(html_relatorio, pdf_path, options=options)
+            logger.info(f"PDF gerado: {pdf_path}")
             
             # Verificar se o arquivo foi criado e tem tamanho válido
             if os.path.exists(pdf_path) and os.path.getsize(pdf_path) > 0:
@@ -729,25 +664,23 @@ def submit_avaliacao():
                 logger.info(f"[{timestamp}] PDF de Diagnóstico formatado conforme HTML — OK")
             else:
                 raise Exception("Arquivo PDF não foi criado ou está vazio")
-            
+                
         except Exception as e:
-            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            logger.error(f"[{timestamp}] Erro ao gerar PDF: {e}")
-            pdf_path = None
+            logger.error("Erro PDF/e-mail", exc_info=True)
+            return jsonify({"error": "Erro interno ao gerar PDF ou enviar e-mail"}), 500
         
         # Tentar enviar email apenas se PDF foi gerado com sucesso
         if pdf_path and os.path.exists(pdf_path) and os.path.getsize(pdf_path) > 0:
             try:
                 envio_sucesso = enviar_email(nome, email, pdf_path, pontuacao_geral)
                 if envio_sucesso:
-                    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    logger.info(f"[{timestamp}] Email enviado com sucesso para {email}")
+                    logger.info(f"E-mail enviado: {email}")
                 else:
                     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     logger.warning(f"[{timestamp}] Falha no envio de email para {email}")
             except Exception as e:
-                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                logger.error(f"[{timestamp}] Erro ao enviar email: {e}")
+                logger.error("Erro PDF/e-mail", exc_info=True)
+                return jsonify({"error": "Erro interno ao gerar PDF ou enviar e-mail"}), 500
         else:
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             logger.error(f"[{timestamp}] Não foi possível enviar email - PDF não gerado ou inválido")
@@ -768,6 +701,7 @@ def submit_avaliacao():
         }), 500
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(debug=False, host='0.0.0.0', port=port)
+    import os
+    port = int(os.environ.get("PORT", 9000))
+    app.run(debug=True, host='0.0.0.0', port=port)
 
