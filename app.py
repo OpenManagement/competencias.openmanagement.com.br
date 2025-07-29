@@ -408,10 +408,11 @@ def checkout():
                 }
             ],
             "back_urls": {
-                "success": request.url_root.rstrip('/') + "/pagamento_sucesso",
-                "failure": request.url_root.rstrip('/') + "/pagamento_falha", 
-                "pending": request.url_root.rstrip('/') + "/pagamento_pendente"
+                "success": url_for('pagamento_sucesso', _external=True),
+                "failure": url_for('pagamento_falha', _external=True),
+                "pending": url_for('pagamento_pendente', _external=True)
             },
+
             "auto_return": "approved",  # <-- Adicione esta linha aqui!
             "external_reference": f"premium_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         }
