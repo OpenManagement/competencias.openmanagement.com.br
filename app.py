@@ -408,9 +408,9 @@ def checkout():
                 }
             ],
             "back_urls": {
-                "success": url_for('pagamento_sucesso', _external=True),
-                "failure": url_for('pagamento_falha', _external=True),
-                "pending": url_for('pagamento_pendente', _external=True)
+                "success": request.url_root.rstrip('/') + url_for('pagamento_sucesso'),
+                "failure": request.url_root.rstrip('/') + url_for('pagamento_falha'),
+                "pending": request.url_root.rstrip('/') + url_for('pagamento_pendente')
             },
 
             "auto_return": "approved",  # <-- Adicione esta linha aqui!
