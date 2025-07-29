@@ -412,6 +412,7 @@ def checkout():
                 "failure": request.url_root.rstrip('/') + "/pagamento_falha", 
                 "pending": request.url_root.rstrip('/') + "/pagamento_pendente"
             },
+            "auto_return": "approved",  # <-- Adicione esta linha aqui!
             "external_reference": f"premium_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         }
         
@@ -479,9 +480,10 @@ def mp_webhook():
 
 @app.route('/pagamento_sucesso')
 def pagamento_sucesso():
-    """Página de sucesso do pagamento"""
+    """Página de sucesso do pagamento — versão profissional com nome personalizado"""
     session['premium_user'] = True
-    return render_template('pagamento_sucesso.html')
+    nome_usuario = request.args.get('nome', '')  # Busca o nome se vier na URL (opcional)
+    return render_template('pagamento_sucesso.html', usuario=nome_usuario)
 
 @app.route('/pagamento_falha')
 def pagamento_falha():
