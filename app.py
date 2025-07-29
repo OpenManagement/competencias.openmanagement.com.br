@@ -412,8 +412,8 @@ def checkout():
                 "failure": request.url_root.rstrip('/') + url_for('pagamento_falha'),
                 "pending": request.url_root.rstrip('/') + url_for('pagamento_pendente')
             },
+            "auto_return": "approved",
 
-            "auto_return": "approved",  # <-- Adicione esta linha aqui!
             "external_reference": f"premium_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         }
         
