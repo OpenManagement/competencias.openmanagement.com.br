@@ -416,7 +416,11 @@ def checkout():
     """Cria preferência de pagamento no Mercado Pago"""
     try:
         # Obter URL base dinamicamente
+        # Obter URL base dinamicamente e forçar HTTPS
         base_url = request.url_root.rstrip('/')
+        if base_url.startswith('http://' ):
+            base_url = base_url.replace('http://', 'https://' )
+
         
         # Dados do produto Premium
         preference_data = {
