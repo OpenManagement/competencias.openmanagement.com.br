@@ -417,6 +417,8 @@ def checkout():
         }
         
         # Criar preferência
+        print("DEBUG preference_data:", preference_data)
+        logger.info(f"DEBUG preference_data: {preference_data}")
         preference_response = mp.preference().create(preference_data)
         
         if preference_response["status"] == 201:
