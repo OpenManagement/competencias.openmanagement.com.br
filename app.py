@@ -427,7 +427,7 @@ def checkout():
         
         if preference_response["status"] == 201:
             preference = preference_response["response"]
-            logger.info(f"Preferência criada: {preference["id"]}")
+            logger.info(f"Preferência criada: {preference['id']}")
             return redirect(preference["init_point"])
         else:
             logger.error(f"Erro ao criar preferência: {preference_response["response"]}")
