@@ -11,6 +11,7 @@ import os
 print("DEBUG MP_ACCESS_TOKEN:", repr(os.getenv("MP_ACCESS_TOKEN")))
 import mercadopago
 from tabela_referencia_competencias import COMPETENCIAS_ACOES
+from database import init_database, save_transaction, get_transaction_by_payment_id, get_transactions_by_status, get_all_transactions, get_transaction_stats
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
@@ -20,6 +21,9 @@ mp = mercadopago.SDK(os.getenv("MP_ACCESS_TOKEN"))
 PUBLIC_KEY = os.getenv("MP_PUBLIC_KEY")
 CLIENT_ID = os.getenv("MP_CLIENT_ID")
 CLIENT_SECRET = os.getenv("MP_CLIENT_SECRET")
+
+# Inicializar banco de dados
+init_database()
 
 
 # Configuração de logging
@@ -326,8 +330,7 @@ def enviar_email(nome, email_destino, pdf_path, pontuacao_geral):
                 
                 <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
                 <p style="color: #666; font-size: 14px;">
-                    <strong>Equipe Método Faça Bem</strong>  
-
+                    <strong>Equipe Método Faça Bem</strong><br>
                     consultoria@openmanagement.com.br
                 </p>
             </div>
@@ -398,13 +401,6 @@ def index():
 def checkout():
     """Cria preferência de pagamento no Mercado Pago"""
     try:
-        # Dados do usuário vindos do formulário
-        nome_usuario = request.form.get('nome_completo', '').strip()
-        email_usuario = request.form.get('email', '').strip()
-
-        # Salvar dados do usuário na sessão para recuperá-los após o pagamento
-        session['user_info'] = {'nome': nome_usuario, 'email': email_usuario}
-        
         # Dados do produto Premium
         preference_data = {
             "items": [
@@ -416,46 +412,37 @@ def checkout():
                 }
             ],
             "back_urls": {
-                "success": url_for('pagamento_sucesso', _external=True),
-                "failure": url_for('pagamento_falha', _external=True),
-                "pending": url_for('pagamento_pendente', _external=True)
+                "success": request.url_root + "pagamento_sucesso",
+                "failure": request.url_root + "pagamento_falha",
+                "pending": request.url_root + "pagamento_pendente"
             },
             "auto_return": "approved",
             "external_reference": f"premium_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         }
         
         # Criar preferência
-        logger.info(f"Criando preferência de pagamento com dados: {preference_data}")
+        print("DEBUG preference_data:", preference_data)
+        logger.info(f"DEBUG preference_data: {preference_data}")
         preference_response = mp.preference().create(preference_data)
         
         if preference_response["status"] == 201:
             preference = preference_response["response"]
-            logger.info(f"Preferência criada com sucesso: {preference['id']}")
-            
-            return jsonify({
-                'success': True,
-                'preference_id': preference['id'],
-                'init_point': preference['init_point']
-            })
+            logger.info(f"Preferência criada: {preference["id"]}")
+            return redirect(preference["init_point"])
         else:
-            logger.error(f"Erro ao criar preferência no Mercado Pago: {preference_response}")
-            return jsonify({
-                'success': False,
-                'message': 'Erro ao iniciar o processo de pagamento. Tente novamente.'
-            }), 500
-        
+            logger.error(f"Erro ao criar preferência: {preference_response["response"]}")
+            return jsonify({"error": "Erro ao criar preferência de pagamento"}), 500
+
     except Exception as e:
-        logger.error(f"Exceção na rota /checkout: {e}", exc_info=True)
-        return jsonify({
-            'success': False,
-            'message': 'Ocorreu um erro inesperado. Por favor, contate o suporte.'
-        }), 500
+        logger.error(f"Erro no checkout: {e}")
+        return jsonify({"error": "Erro interno no servidor"}), 500
 
 @app.route('/mp/webhook', methods=['POST'])
 def mp_webhook():
     """Webhook para receber notificações do Mercado Pago"""
     try:
         data = request.get_json()
+        logger.info(f"Webhook recebido: {data}")
         
         if data and data.get('type') == 'payment':
             payment_id = data['data']['id']
@@ -466,6 +453,13 @@ def mp_webhook():
             
             logger.info(f"Webhook recebido - Payment ID: {payment_id}, Status: {payment.get('status')}")
             
+            # Salvar transação no banco de dados
+            save_success = save_transaction(payment, data)
+            if save_success:
+                logger.info(f"Transação salva no banco de dados: {payment_id}")
+            else:
+                logger.error(f"Erro ao salvar transação no banco de dados: {payment_id}")
+            
             # Verificar se pagamento foi aprovado
             if payment.get('status') == 'approved':
                 # Marcar usuário como premium na sessão
@@ -474,11 +468,11 @@ def mp_webhook():
                 session[f'premium_paid_{external_reference}'] = True
                 session['premium_user'] = True
                 
-                logger.info(f"Pagamento aprovado via webhook para referência: {external_reference}")
+                logger.info(f"Pagamento aprovado para referência: {external_reference}")
                 
                 return jsonify({'status': 'success'}), 200
             else:
-                logger.warning(f"Pagamento não aprovado via webhook - Status: {payment.get('status')}")
+                logger.warning(f"Pagamento não aprovado - Status: {payment.get('status')}")
                 return jsonify({'status': 'payment_not_approved'}), 200
                 
         return jsonify({'status': 'ignored'}), 200
@@ -491,12 +485,7 @@ def mp_webhook():
 def pagamento_sucesso():
     """Página de sucesso do pagamento — versão profissional com nome personalizado"""
     session['premium_user'] = True
-    logger.info("Acesso premium liberado na sessão para o usuário.")
-    
-    # Recuperar nome do usuário da sessão
-    user_info = session.get('user_info', {})
-    nome_usuario = user_info.get('nome', 'Usuário')
-    
+    nome_usuario = request.args.get('nome', '')  # Busca o nome se vier na URL (opcional)
     return render_template('pagamento_sucesso.html', usuario=nome_usuario)
 
 @app.route('/pagamento_falha')
@@ -535,10 +524,9 @@ def submit_avaliacao():
         if tipo_experiencia == 'premium':
             is_premium = session.get('premium_user', False)
             if not is_premium:
-                logger.warning(f"Tentativa de acesso premium sem autorização por {email}.")
                 return jsonify({
                     'success': False,
-                    'message': 'Acesso premium necessário. Realize o pagamento para continuar.',
+                    'message': 'Acesso premium necessário. Complete o pagamento primeiro.',
                     'redirect_to_payment': True
                 }), 403
         
@@ -677,7 +665,7 @@ def submit_avaliacao():
             
             # Verificar se o arquivo foi criado e tem tamanho válido
             if os.path.exists(pdf_path) and os.path.getsize(pdf_path) > 0:
-                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M%S")
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 logger.info(f"[{timestamp}] PDF gerado com sucesso: {pdf_path} ({os.path.getsize(pdf_path)} bytes)")
                 logger.info(f"[{timestamp}] PDF de Diagnóstico formatado conforme HTML — OK")
             else:
@@ -694,12 +682,11 @@ def submit_avaliacao():
                 if envio_sucesso:
                     logger.info(f"E-mail enviado: {email}")
                 else:
-                    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M%S")
+                    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     logger.warning(f"[{timestamp}] Falha no envio de email para {email}")
             except Exception as e:
                 logger.error("Erro PDF/e-mail", exc_info=True)
                 return jsonify({"error": "Erro interno ao gerar PDF ou enviar e-mail"}), 500
-
         else:
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             logger.error(f"[{timestamp}] Não foi possível enviar email - PDF não gerado ou inválido")
@@ -724,3 +711,120 @@ if __name__ == '__main__':
     port = int(os.environ.get("PORT", 9000))
     app.run(debug=True, host='0.0.0.0', port=port)
 
+
+
+@app.route('/pagamento_sucesso')
+def pagamento_sucesso():
+    session['premium_user'] = True
+    logger.info("Pagamento aprovado. Usuário premium ativado.")
+    return render_template('pagamento_sucesso.html')
+
+@app.route('/pagamento_falha')
+def pagamento_falha():
+    logger.warning("Pagamento falhou.")
+    return render_template('pagamento_falha.html')
+
+@app.route('/pagamento_pendente')
+def pagamento_pendente():
+    logger.info("Pagamento pendente.")
+    return render_template('pagamento_pendente.html')
+
+
+
+
+@app.route("/process_payment_return")
+def process_payment_return():
+    payment_status = request.args.get("collection_status")
+    if payment_status == "approved":
+        session["premium_user"] = True
+        logger.info("Pagamento aprovado. Usuário premium ativado.")
+        return redirect(url_for("pagamento_sucesso"))
+    elif payment_status == "pending":
+        logger.info("Pagamento pendente.")
+        return redirect(url_for("pagamento_pendente"))
+    else:
+        logger.warning("Pagamento falhou ou foi rejeitado.")
+        return redirect(url_for("pagamento_falha"))
+
+
+
+
+@app.route("/webhook_mercadopago", methods=["POST"])
+def webhook_mercadopago():
+    data = request.json
+    logger.info(f"Webhook Mercado Pago recebido: {data}")
+    # Aqui você pode processar o webhook para atualizar o status do pagamento no seu banco de dados, se houver.
+    # Por exemplo, verificar o 'type' e 'data.id' para obter detalhes da notificação.
+    # Para este exercício, apenas logamos a informação.
+    return jsonify({"status": "ok"}), 200
+
+
+
+# Rotas de administração para visualizar transações
+@app.route('/admin/transactions')
+def admin_transactions():
+    """Lista todas as transações (para administração)"""
+    try:
+        page = int(request.args.get('page', 1))
+        limit = int(request.args.get('limit', 50))
+        offset = (page - 1) * limit
+        
+        transactions = get_all_transactions(limit=limit, offset=offset)
+        stats = get_transaction_stats()
+        
+        return jsonify({
+            'transactions': transactions,
+            'stats': stats,
+            'pagination': {
+                'page': page,
+                'limit': limit,
+                'offset': offset
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"Erro ao buscar transações: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/transactions/<payment_id>')
+def admin_transaction_detail(payment_id):
+    """Detalhes de uma transação específica"""
+    try:
+        transaction = get_transaction_by_payment_id(payment_id)
+        
+        if transaction:
+            return jsonify({'transaction': transaction})
+        else:
+            return jsonify({'error': 'Transação não encontrada'}), 404
+            
+    except Exception as e:
+        logger.error(f"Erro ao buscar transação {payment_id}: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/transactions/status/<status>')
+def admin_transactions_by_status(status):
+    """Lista transações por status"""
+    try:
+        limit = int(request.args.get('limit', 100))
+        transactions = get_transactions_by_status(status, limit=limit)
+        
+        return jsonify({
+            'transactions': transactions,
+            'status': status,
+            'count': len(transactions)
+        })
+        
+    except Exception as e:
+        logger.error(f"Erro ao buscar transações por status {status}: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/stats')
+def admin_stats():
+    """Estatísticas das transações"""
+    try:
+        stats = get_transaction_stats()
+        return jsonify({'stats': stats})
+        
+    except Exception as e:
+        logger.error(f"Erro ao buscar estatísticas: {e}")
+        return jsonify({'error': str(e)}), 500
