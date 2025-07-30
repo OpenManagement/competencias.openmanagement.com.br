@@ -573,6 +573,40 @@
         loadingOverlay.classList.remove("active");
       }
     });
+
+    // Verificar se usuário tem acesso premium e iniciar automaticamente
+    document.addEventListener('DOMContentLoaded', function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const isPremiumFromUrl = urlParams.get('premium') === 'true';
+      const isPremiumFromStorage = localStorage.getItem('premium_user') === 'true';
+      
+      if (isPremiumFromUrl || isPremiumFromStorage) {
+        // Mostrar mensagem de boas-vindas premium
+        const escolhaSection = document.getElementById('escolhaExperiencia');
+        if (escolhaSection) {
+          escolhaSection.innerHTML = `
+            <div style="background-color: #d4edda; padding: 20px; border-radius: 8px; border: 1px solid #c3e6cb; margin-bottom: 30px;">
+              <h2 style="color: #155724; margin-top: 0;">🎉 Bem-vindo à Versão Premium!</h2>
+              <p style="color: #155724; margin-bottom: 15px;">Seu pagamento foi aprovado com sucesso. Você agora tem acesso completo à versão premium com:</p>
+              <ul style="color: #155724; text-align: left; max-width: 500px; margin: 0 auto;">
+                <li>✅ Plano de desenvolvimento completo</li>
+                <li>✅ Ações específicas para cada competência</li>
+                <li>✅ Relatório em PDF profissional</li>
+                <li>✅ Suporte prioritário</li>
+              </ul>
+              <button onclick="iniciarAvaliacao('premium')" style="background-color: #28a745; color: white; border: none; padding: 15px 30px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 15px;">
+                🚀 Iniciar Avaliação Premium
+              </button>
+            </div>
+          `;
+        }
+        
+        // Limpar parâmetro da URL
+        if (isPremiumFromUrl) {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      }
+    });
   </script>
   
   <footer style="text-align: center; margin-top: 40px; padding: 20px; color: #666; border-top: 1px solid #eee;">

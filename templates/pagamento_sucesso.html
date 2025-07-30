@@ -49,9 +49,29 @@
             font-size: 1em;
             text-decoration: none;
             transition: background-color 0.3s ease;
+            margin: 10px;
+            display: inline-block;
         }
         .button:hover {
             background-color: #0056b3;
+        }
+        .button.primary {
+            background-color: #28a745;
+        }
+        .button.primary:hover {
+            background-color: #218838;
+        }
+        .payment-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-size: 0.9em;
+            color: #666;
+        }
+        .countdown {
+            color: #007bff;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -59,9 +79,45 @@
     <div class="container">
         <div class="icon">✅</div>
         <h1>Pagamento Aprovado!</h1>
-        <p>Sua avaliação premium foi liberada com sucesso. Você já pode acessar todo o conteúdo exclusivo.</p>
+        <p><strong>Parabéns!</strong> Sua avaliação premium foi liberada com sucesso.</p>
+        <p>Você já pode acessar todo o conteúdo exclusivo da versão premium, incluindo o plano de desenvolvimento completo.</p>
+        
+        {% if payment_id or external_reference %}
+        <div class="payment-info">
+            {% if payment_id %}
+            <p><strong>ID do Pagamento:</strong> {{ payment_id }}</p>
+            {% endif %}
+            {% if external_reference %}
+            <p><strong>Referência:</strong> {{ external_reference }}</p>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        <p>Você será redirecionado automaticamente em <span class="countdown" id="countdown">10</span> segundos.</p>
+        
+        <a href="/?premium=true" class="button primary">Iniciar Avaliação Premium Agora</a>
         <a href="/" class="button">Voltar para a página inicial</a>
     </div>
+
+    <script>
+        // Countdown e redirecionamento automático
+        let countdown = 10;
+        const countdownElement = document.getElementById('countdown');
+        
+        const timer = setInterval(() => {
+            countdown--;
+            countdownElement.textContent = countdown;
+            
+            if (countdown <= 0) {
+                clearInterval(timer);
+                window.location.href = '/?premium=true';
+            }
+        }, 1000);
+        
+        // Marcar como usuário premium no localStorage para persistência
+        localStorage.setItem('premium_user', 'true');
+        localStorage.setItem('premium_activated_at', new Date().toISOString());
+    </script>
 </body>
 </html>
 

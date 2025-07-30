@@ -1,0 +1,158 @@
+2025-07-21 15:09:13,841 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:9000
+ * Running on http://169.254.0.21:9000
+2025-07-21 15:09:13,841 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-21 15:09:13,842 - INFO -  * Restarting with stat
+2025-07-21 15:09:14,147 - WARNING -  * Debugger is active!
+2025-07-21 15:09:14,147 - INFO -  * Debugger PIN: 297-041-946
+2025-07-21 16:18:55,934 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:9000
+ * Running on http://192.168.15.159:9000
+2025-07-21 16:18:55,934 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-21 16:18:55,943 - INFO -  * Restarting with stat
+2025-07-21 16:18:56,409 - WARNING -  * Debugger is active!
+2025-07-21 16:18:56,413 - INFO -  * Debugger PIN: 153-079-187
+2025-07-21 16:19:48,584 - INFO - 192.168.15.159 - - [21/Jul/2025 16:19:48] "GET / HTTP/1.1" 200 -
+2025-07-21 16:19:49,308 - INFO - 192.168.15.159 - - [21/Jul/2025 16:19:49] "GET /static/img/logo.png HTTP/1.1" 200 -
+2025-07-21 16:20:05,605 - INFO - 192.168.15.159 - - [21/Jul/2025 16:20:05] "GET / HTTP/1.1" 200 -
+2025-07-21 16:20:05,651 - INFO - 192.168.15.159 - - [21/Jul/2025 16:20:05] "[36mGET /static/img/logo.png HTTP/1.1[0m" 304 -
+2025-07-21 16:20:09,350 - ERROR - Erro ao criar preferência MP: {'status': 400, 'response': {'message': 'invalid_token', 'error': 'bad_request', 'status': 400, 'cause': None}}
+2025-07-21 16:20:09,350 - INFO - 192.168.15.159 - - [21/Jul/2025 16:20:09] "[35m[1mPOST /checkout HTTP/1.1[0m" 500 -
+2025-07-21 16:21:14,783 - INFO - Processando avaliação para Tom da Cruz (washington.a.dacruz@gmail.com)
+2025-07-21 16:21:14,783 - INFO - Respostas recebidas: 50 itens
+2025-07-21 16:21:15,279 - INFO - 192.168.15.159 - - [21/Jul/2025 16:21:15] "GET /static/img/logo_nova_semfundo.png HTTP/1.1" 200 -
+2025-07-21 16:21:16,383 - INFO - PDF gerado: C:\Users\User\OneDrive\Área de Trabalho\site avaliacao_competencias\competencias_site\static\reports\relatorio_Tom_da_Cruz_20250721_162114.pdf
+2025-07-21 16:21:16,383 - INFO - [2025-07-21 16:21:16] PDF gerado com sucesso: C:\Users\User\OneDrive\Área de Trabalho\site avaliacao_competencias\competencias_site\static\reports\relatorio_Tom_da_Cruz_20250721_162114.pdf (231282 bytes)
+2025-07-21 16:21:16,383 - INFO - [2025-07-21 16:21:16] PDF de Diagnóstico formatado conforme HTML — OK
+2025-07-21 16:21:16,396 - ERROR - [2025-07-21 16:21:16] Erro ao enviar email: please run connect() first
+2025-07-21 16:21:16,396 - WARNING - [2025-07-21 16:21:16] Falha no envio de email para washington.a.dacruz@gmail.com
+2025-07-21 16:21:16,396 - INFO - 192.168.15.159 - - [21/Jul/2025 16:21:16] "POST /submit_avaliacao HTTP/1.1" 200 -
+2025-07-21 16:21:16,409 - INFO - 192.168.15.159 - - [21/Jul/2025 16:21:16] "GET /static/img/logo_nova_semfundo.png HTTP/1.1" 200 -
+2025-07-28 09:38:31,855 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:9000
+ * Running on http://192.168.15.159:9000
+2025-07-28 09:38:31,859 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-28 09:38:31,868 - INFO -  * Restarting with stat
+2025-07-28 09:38:32,724 - WARNING -  * Debugger is active!
+2025-07-28 09:38:32,740 - INFO -  * Debugger PIN: 153-079-187
+2025-07-28 09:39:01,552 - INFO - 192.168.15.159 - - [28/Jul/2025 09:39:01] "GET / HTTP/1.1" 200 -
+2025-07-28 09:39:02,277 - INFO - 192.168.15.159 - - [28/Jul/2025 09:39:02] "GET /static/img/logo.png HTTP/1.1" 200 -
+2025-07-28 09:39:02,299 - INFO - 192.168.15.159 - - [28/Jul/2025 09:39:02] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-07-28 09:39:05,653 - ERROR - Erro ao criar preferência MP: {'status': 400, 'response': {'message': 'invalid_token', 'error': 'bad_request', 'status': 400, 'cause': None}}
+2025-07-28 09:39:05,653 - INFO - 192.168.15.159 - - [28/Jul/2025 09:39:05] "[35m[1mPOST /checkout HTTP/1.1[0m" 500 -
+2025-07-28 09:40:20,014 - INFO - Processando avaliação para Tom da Cruz (washington.a.dacruz@gmail.com)
+2025-07-28 09:40:20,014 - INFO - Respostas recebidas: 50 itens
+2025-07-28 09:40:20,347 - INFO - 192.168.15.159 - - [28/Jul/2025 09:40:20] "GET /static/img/logo_nova_semfundo.png HTTP/1.1" 200 -
+2025-07-28 09:40:21,293 - INFO - PDF gerado: C:\Users\User\OneDrive\Área de Trabalho\site avaliacao_competencias\competencias_site_backup\static\reports\relatorio_Tom_da_Cruz_20250728_094020.pdf
+2025-07-28 09:40:21,293 - INFO - [2025-07-28 09:40:21] PDF gerado com sucesso: C:\Users\User\OneDrive\Área de Trabalho\site avaliacao_competencias\competencias_site_backup\static\reports\relatorio_Tom_da_Cruz_20250728_094020.pdf (232306 bytes)
+2025-07-28 09:40:21,293 - INFO - [2025-07-28 09:40:21] PDF de Diagnóstico formatado conforme HTML — OK
+2025-07-28 09:40:23,413 - ERROR - [2025-07-28 09:40:23] Erro ao enviar email: (535, b'Authentication Failed')
+2025-07-28 09:40:23,413 - WARNING - [2025-07-28 09:40:23] Falha no envio de email para washington.a.dacruz@gmail.com
+2025-07-28 09:40:23,413 - INFO - 192.168.15.159 - - [28/Jul/2025 09:40:23] "POST /submit_avaliacao HTTP/1.1" 200 -
+2025-07-28 09:40:23,437 - INFO - 192.168.15.159 - - [28/Jul/2025 09:40:23] "GET /static/img/logo_nova_semfundo.png HTTP/1.1" 200 -
+2025-07-28 10:23:15,163 - INFO -  * Detected change in 'C:\\Users\\User\\OneDrive\\Área de Trabalho\\site avaliacao_competencias\\competencias_site_backup\\app.py', reloading
+2025-07-28 10:23:16,327 - INFO -  * Restarting with stat
+2025-07-28 10:23:19,554 - WARNING -  * Debugger is active!
+2025-07-28 10:23:19,559 - INFO -  * Debugger PIN: 153-079-187
+2025-07-30 10:50:10,514 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:9000
+ * Running on http://192.168.15.159:9000
+2025-07-30 10:50:10,514 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-30 10:50:10,529 - INFO -  * Restarting with stat
+2025-07-30 10:50:11,020 - WARNING -  * Debugger is active!
+2025-07-30 10:50:11,020 - INFO -  * Debugger PIN: 153-079-187
+2025-07-30 10:51:28,573 - INFO - 127.0.0.1 - - [30/Jul/2025 10:51:28] "GET / HTTP/1.1" 200 -
+2025-07-30 10:51:28,903 - INFO - 127.0.0.1 - - [30/Jul/2025 10:51:28] "GET /static/img/logo.png HTTP/1.1" 200 -
+2025-07-30 10:51:29,194 - INFO - 127.0.0.1 - - [30/Jul/2025 10:51:29] "GET /static/img/favicon.ico HTTP/1.1" 200 -
+2025-07-30 10:51:30,249 - INFO - DEBUG preference_data: {'items': [{'title': 'Avaliação de Competências - Versão Premium', 'quantity': 1, 'unit_price': 29.9, 'currency_id': 'BRL'}], 'back_urls': {'success': 'http://web-production-a302.up.railway.app/pagamento_sucesso', 'failure': 'http://web-production-a302.up.railway.app/pagamento_falha', 'pending': 'http://web-production-a302.up.railway.app/pagamento_pendente'}, 'auto_return': 'approved', 'external_reference': 'premium_20250730_105130'}
+2025-07-30 10:51:30,780 - ERROR - Erro ao criar preferência: {'message': 'invalid_token', 'error': 'bad_request', 'status': 400, 'cause': None}
+2025-07-30 10:51:30,780 - INFO - 127.0.0.1 - - [30/Jul/2025 10:51:30] "[35m[1mPOST /checkout HTTP/1.1[0m" 500 -
+2025-07-30 10:55:14,273 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:9000
+ * Running on http://192.168.15.159:9000
+2025-07-30 10:55:14,273 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-30 10:55:14,277 - INFO -  * Restarting with stat
+2025-07-30 10:55:14,747 - WARNING -  * Debugger is active!
+2025-07-30 10:55:14,749 - INFO -  * Debugger PIN: 153-079-187
+2025-07-30 10:57:37,976 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:9000
+ * Running on http://192.168.15.159:9000
+2025-07-30 10:57:37,983 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-30 10:57:37,983 - INFO -  * Restarting with stat
+2025-07-30 10:57:38,445 - WARNING -  * Debugger is active!
+2025-07-30 10:57:38,449 - INFO -  * Debugger PIN: 153-079-187
+2025-07-30 10:58:28,557 - INFO - 127.0.0.1 - - [30/Jul/2025 10:58:28] "GET / HTTP/1.1" 200 -
+2025-07-30 10:58:28,591 - INFO - 127.0.0.1 - - [30/Jul/2025 10:58:28] "[36mGET /static/img/logo.png HTTP/1.1[0m" 304 -
+2025-07-30 10:58:30,512 - INFO - DEBUG preference_data: {'items': [{'title': 'Avaliação de Competências - Versão Premium', 'quantity': 1, 'unit_price': 29.9, 'currency_id': 'BRL'}], 'back_urls': {'success': 'http://web-production-a302.up.railway.app/pagamento_sucesso', 'failure': 'http://web-production-a302.up.railway.app/pagamento_falha', 'pending': 'http://web-production-a302.up.railway.app/pagamento_pendente'}, 'auto_return': 'approved', 'external_reference': 'premium_20250730_105830'}
+2025-07-30 10:58:31,049 - ERROR - Erro ao criar preferência: {'message': 'invalid_token', 'error': 'bad_request', 'status': 400, 'cause': None}
+2025-07-30 10:58:31,049 - INFO - 127.0.0.1 - - [30/Jul/2025 10:58:31] "[35m[1mPOST /checkout HTTP/1.1[0m" 500 -
+2025-07-30 10:58:42,537 - INFO - DEBUG preference_data: {'items': [{'title': 'Avaliação de Competências - Versão Premium', 'quantity': 1, 'unit_price': 29.9, 'currency_id': 'BRL'}], 'back_urls': {'success': 'http://web-production-a302.up.railway.app/pagamento_sucesso', 'failure': 'http://web-production-a302.up.railway.app/pagamento_falha', 'pending': 'http://web-production-a302.up.railway.app/pagamento_pendente'}, 'auto_return': 'approved', 'external_reference': 'premium_20250730_105842'}
+2025-07-30 10:58:43,041 - ERROR - Erro ao criar preferência: {'message': 'invalid_token', 'error': 'bad_request', 'status': 400, 'cause': None}
+2025-07-30 10:58:43,041 - INFO - 127.0.0.1 - - [30/Jul/2025 10:58:43] "[35m[1mPOST /checkout HTTP/1.1[0m" 500 -
+2025-07-30 10:58:50,082 - INFO - DEBUG preference_data: {'items': [{'title': 'Avaliação de Competências - Versão Premium', 'quantity': 1, 'unit_price': 29.9, 'currency_id': 'BRL'}], 'back_urls': {'success': 'http://web-production-a302.up.railway.app/pagamento_sucesso', 'failure': 'http://web-production-a302.up.railway.app/pagamento_falha', 'pending': 'http://web-production-a302.up.railway.app/pagamento_pendente'}, 'auto_return': 'approved', 'external_reference': 'premium_20250730_105850'}
+2025-07-30 10:58:50,618 - ERROR - Erro ao criar preferência: {'message': 'invalid_token', 'error': 'bad_request', 'status': 400, 'cause': None}
+2025-07-30 10:58:50,618 - INFO - 127.0.0.1 - - [30/Jul/2025 10:58:50] "[35m[1mPOST /checkout HTTP/1.1[0m" 500 -
+2025-07-30 11:00:59,571 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:9000
+ * Running on http://192.168.15.159:9000
+2025-07-30 11:00:59,571 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-30 11:00:59,571 - INFO -  * Restarting with stat
+2025-07-30 11:01:00,047 - WARNING -  * Debugger is active!
+2025-07-30 11:01:00,049 - INFO -  * Debugger PIN: 153-079-187
+2025-07-30 11:02:19,676 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:9000
+ * Running on http://192.168.15.159:9000
+2025-07-30 11:02:19,676 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-30 11:02:19,676 - INFO -  * Restarting with stat
+2025-07-30 11:02:20,136 - WARNING -  * Debugger is active!
+2025-07-30 11:02:20,136 - INFO -  * Debugger PIN: 153-079-187
+2025-07-30 11:02:45,371 - INFO - 127.0.0.1 - - [30/Jul/2025 11:02:45] "GET / HTTP/1.1" 200 -
+2025-07-30 11:02:45,412 - INFO - 127.0.0.1 - - [30/Jul/2025 11:02:45] "[36mGET /static/img/logo.png HTTP/1.1[0m" 304 -
+2025-07-30 11:02:47,515 - INFO - DEBUG preference_data: {'items': [{'title': 'Avaliação de Competências - Versão Premium', 'quantity': 1, 'unit_price': 29.9, 'currency_id': 'BRL'}], 'back_urls': {'success': 'http://web-production-a302.up.railway.app/pagamento_sucesso', 'failure': 'http://web-production-a302.up.railway.app/pagamento_falha', 'pending': 'http://web-production-a302.up.railway.app/pagamento_pendente'}, 'auto_return': 'approved', 'external_reference': 'premium_20250730_110247'}
+2025-07-30 11:02:48,054 - ERROR - Erro ao criar preferência: {'message': 'invalid_token', 'error': 'bad_request', 'status': 400, 'cause': None}
+2025-07-30 11:02:48,054 - INFO - 127.0.0.1 - - [30/Jul/2025 11:02:48] "[35m[1mPOST /checkout HTTP/1.1[0m" 500 -
+2025-07-30 10:29:42,255 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:9000
+ * Running on http://169.254.0.21:9000
+2025-07-30 10:29:42,256 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-30 10:29:42,260 - INFO -  * Restarting with stat
+2025-07-30 10:29:42,499 - WARNING -  * Debugger is active!
+2025-07-30 10:29:42,499 - INFO -  * Debugger PIN: 137-843-159
+2025-07-30 10:30:18,566 - INFO - 127.0.0.1 - - [30/Jul/2025 10:30:18] "GET / HTTP/1.1" 200 -
+2025-07-30 10:30:18,585 - INFO - 127.0.0.1 - - [30/Jul/2025 10:30:18] "GET /static/img/logo.png HTTP/1.1" 200 -
+2025-07-30 10:30:18,709 - INFO - 127.0.0.1 - - [30/Jul/2025 10:30:18] "GET /static/img/favicon.ico HTTP/1.1" 200 -
+2025-07-30 10:30:27,784 - INFO - Criando preferÃªncia MP com dados: {'items': [{'title': 'AvaliaÃ§Ã£o de CompetÃªncias - VersÃ£o Premium', 'quantity': 1, 'unit_price': 29.9, 'currency_id': 'BRL'}], 'back_urls': {'success': 'http://127.0.0.1:9000/pagamento_sucesso', 'failure': 'http://127.0.0.1:9000/pagamento_falha', 'pending': 'http://127.0.0.1:9000/pagamento_pendente'}, 'auto_return': 'approved', 'external_reference': 'premium_20250730_103027'}
+2025-07-30 10:30:27,835 - ERROR - Erro ao criar preferÃªncia MP: {'status': 400, 'response': {'message': 'auto_return invalid. back_url.success must be defined', 'error': 'invalid_auto_return', 'status': 400, 'cause': None}}
+2025-07-30 10:30:27,836 - INFO - 127.0.0.1 - - [30/Jul/2025 10:30:27] "[35m[1mPOST /checkout HTTP/1.1[0m" 500 -
+2025-07-30 10:30:55,625 - INFO -  * Detected change in '/home/ubuntu/repo/app.py', reloading
+2025-07-30 10:30:55,668 - INFO -  * Restarting with stat
+2025-07-30 10:30:55,919 - WARNING -  * Debugger is active!
+2025-07-30 10:30:55,919 - INFO -  * Debugger PIN: 137-843-159
+2025-07-30 10:31:00,934 - INFO - 127.0.0.1 - - [30/Jul/2025 10:31:00] "GET / HTTP/1.1" 200 -
+2025-07-30 10:31:00,953 - INFO - 127.0.0.1 - - [30/Jul/2025 10:31:00] "[36mGET /static/img/logo.png HTTP/1.1[0m" 304 -
+2025-07-30 10:31:07,895 - INFO - Criando preferÃªncia MP com dados: {'items': [{'title': 'AvaliaÃ§Ã£o de CompetÃªncias - VersÃ£o Premium', 'quantity': 1, 'unit_price': 29.9, 'currency_id': 'BRL'}], 'back_urls': {'success': 'http://127.0.0.1:9000/pagamento_sucesso', 'failure': 'http://127.0.0.1:9000/pagamento_falha', 'pending': 'http://127.0.0.1:9000/pagamento_pendente'}, 'auto_return': 'approved', 'external_reference': 'premium_20250730_103107', 'notification_url': 'http://127.0.0.1:9000/mp/webhook'}
+2025-07-30 10:31:07,939 - ERROR - Erro ao criar preferÃªncia MP: {'status': 400, 'response': {'message': 'auto_return invalid. back_url.success must be defined', 'error': 'invalid_auto_return', 'status': 400, 'cause': None}}
+2025-07-30 10:31:07,940 - INFO - 127.0.0.1 - - [30/Jul/2025 10:31:07] "[35m[1mPOST /checkout HTTP/1.1[0m" 500 -
+2025-07-30 10:31:35,990 - INFO -  * Detected change in '/home/ubuntu/repo/app.py', reloading
+2025-07-30 10:31:36,045 - INFO -  * Restarting with stat
+2025-07-30 10:31:36,311 - WARNING -  * Debugger is active!
+2025-07-30 10:31:36,311 - INFO -  * Debugger PIN: 137-843-159
+2025-07-30 10:31:41,041 - INFO - Criando preferÃªncia MP com dados: {'items': [{'title': 'AvaliaÃ§Ã£o de CompetÃªncias - VersÃ£o Premium', 'quantity': 1, 'unit_price': 29.9, 'currency_id': 'BRL'}], 'back_urls': {'success': 'http://127.0.0.1:9000/pagamento_sucesso', 'failure': 'http://127.0.0.1:9000/pagamento_falha', 'pending': 'http://127.0.0.1:9000/pagamento_pendente'}, 'external_reference': 'premium_20250730_103141', 'notification_url': 'http://127.0.0.1:9000/mp/webhook'}
+2025-07-30 10:31:41,096 - ERROR - Erro ao criar preferÃªncia MP: {'status': 400, 'response': {'message': 'notificaction_url attribute must be a valid url', 'error': 'invalid_notification_url', 'status': 400, 'cause': None}}
+2025-07-30 10:31:41,096 - INFO - 127.0.0.1 - - [30/Jul/2025 10:31:41] "[35m[1mPOST /checkout HTTP/1.1[0m" 500 -
+2025-07-30 10:32:02,358 - INFO -  * Detected change in '/home/ubuntu/repo/app.py', reloading
+2025-07-30 10:32:02,412 - INFO -  * Restarting with stat
+2025-07-30 10:32:02,691 - WARNING -  * Debugger is active!
+2025-07-30 10:32:02,691 - INFO -  * Debugger PIN: 137-843-159
+2025-07-30 10:32:07,696 - INFO - Criando preferÃªncia MP com dados: {'items': [{'title': 'AvaliaÃ§Ã£o de CompetÃªncias - VersÃ£o Premium', 'quantity': 1, 'unit_price': 29.9, 'currency_id': 'BRL'}], 'back_urls': {'success': 'http://127.0.0.1:9000/pagamento_sucesso', 'failure': 'http://127.0.0.1:9000/pagamento_falha', 'pending': 'http://127.0.0.1:9000/pagamento_pendente'}, 'external_reference': 'premium_20250730_103207'}
+2025-07-30 10:32:07,927 - INFO - PreferÃªncia criada com sucesso: 148633438-8a79b618-b17a-4e70-bb35-81a15a002be3
+2025-07-30 10:32:07,928 - INFO - 127.0.0.1 - - [30/Jul/2025 10:32:07] "POST /checkout HTTP/1.1" 200 -

@@ -8,6 +8,20 @@ from email.mime.base import MIMEBase
 from email import encoders
 import pdfkit
 import os
+
+# Carregar variáveis de ambiente do arquivo .env
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    # Se python-dotenv não estiver instalado, carregar manualmente
+    if os.path.exists('.env'):
+        with open('.env', 'r') as f:
+            for line in f:
+                if '=' in line and not line.startswith('#'):
+                    key, value = line.strip().split('=', 1)
+                    os.environ[key] = value
+
 print("DEBUG MP_ACCESS_TOKEN:", repr(os.getenv("MP_ACCESS_TOKEN")))
 import mercadopago
 from tabela_referencia_competencias import COMPETENCIAS_ACOES
@@ -401,6 +415,9 @@ def index():
 def checkout():
     """Cria preferência de pagamento no Mercado Pago"""
     try:
+        # Obter URL base dinamicamente
+        base_url = request.url_root.rstrip('/')
+        
         # Dados do produto Premium
         preference_data = {
             "items": [
@@ -412,71 +429,88 @@ def checkout():
                 }
             ],
             'back_urls': {
-                'success': 'http://web-production-a302.up.railway.app/pagamento_sucesso',
-                'failure': 'http://web-production-a302.up.railway.app/pagamento_falha',
-                'pending': 'http://web-production-a302.up.railway.app/pagamento_pendente',
+                'success': f'{base_url}/pagamento_sucesso',
+                'failure': f'{base_url}/pagamento_falha',
+                'pending': f'{base_url}/pagamento_pendente',
             },
-
-            "auto_return": "approved",
             "external_reference": f"premium_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         }
         
         # Criar preferência
-        print("DEBUG preference_data:", preference_data)
-        logger.info(f"DEBUG preference_data: {preference_data}")
+        logger.info(f"Criando preferência MP com dados: {preference_data}")
         preference_response = mp.preference().create(preference_data)
         
         if preference_response["status"] == 201:
             preference = preference_response["response"]
-            logger.info(f"Preferência criada: {preference['id']}")
-            return redirect(preference["init_point"])
+            logger.info(f"Preferência criada com sucesso: {preference['id']}")
+            
+            # Retornar JSON para o frontend em vez de redirect
+            return jsonify({
+                "success": True,
+                "init_point": preference["init_point"],
+                "preference_id": preference["id"]
+            })
         else:
-            logger.error(f"Erro ao criar preferência: {preference_response['response']}")
-            return jsonify({"error": "Erro ao criar preferência de pagamento"}), 500
+            logger.error(f"Erro ao criar preferência MP: {preference_response}")
+            return jsonify({
+                "success": False,
+                "error": "Erro ao criar preferência de pagamento"
+            }), 500
 
     except Exception as e:
         logger.error(f"Erro no checkout: {e}")
-        return jsonify({"error": "Erro interno no servidor"}), 500
+        return jsonify({
+            "success": False,
+            "error": "Erro interno no servidor"
+        }), 500
 
 @app.route('/mp/webhook', methods=['POST'])
 def mp_webhook():
     """Webhook para receber notificações do Mercado Pago"""
     try:
         data = request.get_json()
-        logger.info(f"Webhook recebido: {data}")
+        logger.info(f"Webhook MP recebido: {data}")
         
         if data and data.get('type') == 'payment':
             payment_id = data['data']['id']
             
             # Buscar informações do pagamento
             payment_info = mp.payment().get(payment_id)
-            payment = payment_info["response"]
             
-            logger.info(f"Webhook recebido - Payment ID: {payment_id}, Status: {payment.get('status')}")
-            
-            # Salvar transação no banco de dados
-            save_success = save_transaction(payment, data)
-            if save_success:
-                logger.info(f"Transação salva no banco de dados: {payment_id}")
+            if payment_info["status"] == 200:
+                payment = payment_info["response"]
+                
+                logger.info(f"Webhook MP - Payment ID: {payment_id}, Status: {payment.get('status')}, External Ref: {payment.get('external_reference')}")
+                
+                # Salvar transação no banco de dados
+                save_success = save_transaction(payment, data)
+                if save_success:
+                    logger.info(f"Transação salva no banco: {payment_id}")
+                else:
+                    logger.error(f"Erro ao salvar transação: {payment_id}")
+                
+                # Verificar se pagamento foi aprovado
+                if payment.get('status') == 'approved':
+                    external_reference = payment.get('external_reference', '')
+                    
+                    # Marcar como premium no banco de dados (mais confiável que sessão)
+                    # Para este projeto, vamos usar a sessão mas com melhor controle
+                    session[f'premium_paid_{external_reference}'] = True
+                    session['premium_user'] = True
+                    session['payment_id'] = payment_id
+                    session['external_reference'] = external_reference
+                    
+                    logger.info(f"✅ Pagamento APROVADO - Ref: {external_reference}, Payment ID: {payment_id}")
+                    
+                    return jsonify({'status': 'success', 'message': 'Payment approved'}), 200
+                else:
+                    logger.warning(f"❌ Pagamento NÃO aprovado - Status: {payment.get('status')}")
+                    return jsonify({'status': 'payment_not_approved', 'payment_status': payment.get('status')}), 200
             else:
-                logger.error(f"Erro ao salvar transação no banco de dados: {payment_id}")
-            
-            # Verificar se pagamento foi aprovado
-            if payment.get('status') == 'approved':
-                # Marcar usuário como premium na sessão
-                # Em produção, isso deveria ser salvo em banco de dados
-                external_reference = payment.get('external_reference', '')
-                session[f'premium_paid_{external_reference}'] = True
-                session['premium_user'] = True
+                logger.error(f"Erro ao buscar informações do pagamento: {payment_info}")
+                return jsonify({'status': 'error', 'message': 'Failed to get payment info'}), 400
                 
-                logger.info(f"Pagamento aprovado para referência: {external_reference}")
-                
-                return jsonify({'status': 'success'}), 200
-            else:
-                logger.warning(f"Pagamento não aprovado - Status: {payment.get('status')}")
-                return jsonify({'status': 'payment_not_approved'}), 200
-                
-        return jsonify({'status': 'ignored'}), 200
+        return jsonify({'status': 'ignored', 'message': 'Not a payment notification'}), 200
         
     except Exception as e:
         logger.error(f"Erro no webhook MP: {e}")
@@ -484,10 +518,27 @@ def mp_webhook():
 
 @app.route('/pagamento_sucesso')
 def pagamento_sucesso():
-    """Página de sucesso do pagamento — versão profissional com nome personalizado"""
+    """Página de sucesso do pagamento — redireciona para avaliação premium"""
+    # Marcar usuário como premium na sessão
     session['premium_user'] = True
-    nome_usuario = request.args.get('nome', '')  # Busca o nome se vier na URL (opcional)
-    return render_template('pagamento_sucesso.html', usuario=nome_usuario)
+    
+    # Obter parâmetros do Mercado Pago
+    payment_id = request.args.get('payment_id')
+    external_reference = request.args.get('external_reference')
+    
+    if payment_id:
+        session['payment_id'] = payment_id
+        logger.info(f"✅ Usuário redirecionado após pagamento aprovado - Payment ID: {payment_id}")
+    
+    if external_reference:
+        session['external_reference'] = external_reference
+        session[f'premium_paid_{external_reference}'] = True
+        logger.info(f"✅ Acesso premium liberado - External Ref: {external_reference}")
+    
+    # Redirecionar para a página principal com acesso premium
+    return render_template('pagamento_sucesso.html', 
+                         payment_id=payment_id, 
+                         external_reference=external_reference)
 
 @app.route('/pagamento_falha')
 def pagamento_falha():
