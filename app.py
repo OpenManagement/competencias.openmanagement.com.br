@@ -326,7 +326,8 @@ def enviar_email(nome, email_destino, pdf_path, pontuacao_geral):
                 
                 <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
                 <p style="color: #666; font-size: 14px;">
-                    <strong>Equipe Método Faça Bem</strong><br>
+                    <strong>Equipe Método Faça Bem</strong>  
+
                     consultoria@openmanagement.com.br
                 </p>
             </div>
@@ -397,6 +398,13 @@ def index():
 def checkout():
     """Cria preferência de pagamento no Mercado Pago"""
     try:
+        # Dados do usuário vindos do formulário
+        nome_usuario = request.form.get('nome_completo', '').strip()
+        email_usuario = request.form.get('email', '').strip()
+
+        # Salvar dados do usuário na sessão para recuperá-los após o pagamento
+        session['user_info'] = {'nome': nome_usuario, 'email': email_usuario}
+        
         # Dados do produto Premium
         preference_data = {
             "items": [
@@ -417,13 +425,12 @@ def checkout():
         }
         
         # Criar preferência
-        print("DEBUG preference_data:", preference_data)
-        logger.info(f"DEBUG preference_data: {preference_data}")
+        logger.info(f"Criando preferência de pagamento com dados: {preference_data}")
         preference_response = mp.preference().create(preference_data)
         
         if preference_response["status"] == 201:
             preference = preference_response["response"]
-            logger.info(f"Preferência criada: {preference['id']}")
+            logger.info(f"Preferência criada com sucesso: {preference['id']}")
             
             return jsonify({
                 'success': True,
@@ -431,17 +438,17 @@ def checkout():
                 'init_point': preference['init_point']
             })
         else:
-            logger.error(f"Erro ao criar preferência MP: {preference_response}")
+            logger.error(f"Erro ao criar preferência no Mercado Pago: {preference_response}")
             return jsonify({
                 'success': False,
-                'message': 'Erro ao processar pagamento'
+                'message': 'Erro ao iniciar o processo de pagamento. Tente novamente.'
             }), 500
         
     except Exception as e:
-        logger.error(f"Erro ao criar preferência MP: {e}")
+        logger.error(f"Exceção na rota /checkout: {e}", exc_info=True)
         return jsonify({
             'success': False,
-            'message': 'Erro ao processar pagamento'
+            'message': 'Ocorreu um erro inesperado. Por favor, contate o suporte.'
         }), 500
 
 @app.route('/mp/webhook', methods=['POST'])
@@ -467,11 +474,11 @@ def mp_webhook():
                 session[f'premium_paid_{external_reference}'] = True
                 session['premium_user'] = True
                 
-                logger.info(f"Pagamento aprovado para referência: {external_reference}")
+                logger.info(f"Pagamento aprovado via webhook para referência: {external_reference}")
                 
                 return jsonify({'status': 'success'}), 200
             else:
-                logger.warning(f"Pagamento não aprovado - Status: {payment.get('status')}")
+                logger.warning(f"Pagamento não aprovado via webhook - Status: {payment.get('status')}")
                 return jsonify({'status': 'payment_not_approved'}), 200
                 
         return jsonify({'status': 'ignored'}), 200
@@ -484,7 +491,12 @@ def mp_webhook():
 def pagamento_sucesso():
     """Página de sucesso do pagamento — versão profissional com nome personalizado"""
     session['premium_user'] = True
-    nome_usuario = request.args.get('nome', '')  # Busca o nome se vier na URL (opcional)
+    logger.info("Acesso premium liberado na sessão para o usuário.")
+    
+    # Recuperar nome do usuário da sessão
+    user_info = session.get('user_info', {})
+    nome_usuario = user_info.get('nome', 'Usuário')
+    
     return render_template('pagamento_sucesso.html', usuario=nome_usuario)
 
 @app.route('/pagamento_falha')
@@ -523,9 +535,10 @@ def submit_avaliacao():
         if tipo_experiencia == 'premium':
             is_premium = session.get('premium_user', False)
             if not is_premium:
+                logger.warning(f"Tentativa de acesso premium sem autorização por {email}.")
                 return jsonify({
                     'success': False,
-                    'message': 'Acesso premium necessário. Complete o pagamento primeiro.',
+                    'message': 'Acesso premium necessário. Realize o pagamento para continuar.',
                     'redirect_to_payment': True
                 }), 403
         
@@ -664,7 +677,7 @@ def submit_avaliacao():
             
             # Verificar se o arquivo foi criado e tem tamanho válido
             if os.path.exists(pdf_path) and os.path.getsize(pdf_path) > 0:
-                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M%S")
                 logger.info(f"[{timestamp}] PDF gerado com sucesso: {pdf_path} ({os.path.getsize(pdf_path)} bytes)")
                 logger.info(f"[{timestamp}] PDF de Diagnóstico formatado conforme HTML — OK")
             else:
@@ -681,11 +694,12 @@ def submit_avaliacao():
                 if envio_sucesso:
                     logger.info(f"E-mail enviado: {email}")
                 else:
-                    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M%S")
                     logger.warning(f"[{timestamp}] Falha no envio de email para {email}")
             except Exception as e:
                 logger.error("Erro PDF/e-mail", exc_info=True)
                 return jsonify({"error": "Erro interno ao gerar PDF ou enviar e-mail"}), 500
+
         else:
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             logger.error(f"[{timestamp}] Não foi possível enviar email - PDF não gerado ou inválido")
