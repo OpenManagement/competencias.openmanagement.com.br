@@ -2,101 +2,66 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Acesso Premium Liberado!</title>
-    <meta http-equiv="refresh" content="2;url={{ url_for('index') }}">
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagamento Aprovado!</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #f6f8fa; }
-        .container { max-width: 480px; margin: 80px auto; background: #fff; border-radius: 12px; box-shadow: 0 4px 32px rgba(0,0,0,0.09); padding: 36px; text-align: center; }
-        .icon { font-size: 4rem; color: #15a871; }
-        h1 { color: #15a871; font-size: 2rem; margin: 12px 0 18px 0;}
-        p { font-size: 1.15rem; color: #222; margin-bottom: 18px;}
-        .loader {
-            border: 6px solid #f3f3f3;
-            border-radius: 50%;
-            border-top: 6px solid #15a871;
-            width: 40px;
-            height: 40px;
-            margin: 20px auto 0 auto;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-        .small { color: #555; font-size: 0.95em; margin-top: 18px;}
-        .social {
-            margin-top: 20px;
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
-            gap: 8px;
+            min-height: 100vh;
+            margin: 0;
         }
-        .social a {
-            color: #15a871;
+        .container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+        h1 {
+            color: #28a745;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        p {
+            color: #555555;
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        .icon {
+            font-size: 4em;
+            color: #28a745;
+            margin-bottom: 20px;
+        }
+        .button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
             text-decoration: none;
-            font-weight: bold;
+            transition: background-color 0.3s ease;
         }
-
-        <div class="impacto" style="margin-top:22px; text-align:left;">
-            <b>🌱 Valor Social:</b> Parte da sua assinatura contribui para projetos sociais de desenvolvimento de competências e inclusão no mercado de trabalho.<br>
-            <b>♻️ Valor Ambiental:</b> Nosso processo é 100% digital, evitando desperdício de papel e promovendo consciência ecológica.<br>
-            <b>🏆 Valor Organizacional:</b> Você agora faz parte de uma rede que busca excelência, ética e impacto positivo nas organizações.
-        </div>
-
-        .bonus {
-            background: #e7faf0;
-            border-radius: 8px;
-            padding: 12px;
-            margin-top: 24px;
-            color: #136344;
+        .button:hover {
+            background-color: #0056b3;
         }
-        .qr-container {
-            margin-top: 12px;
-            margin-bottom: 8px;
-        }
-        .qr-container img {
-            width: 110px;
-            border-radius: 8px;
-            margin-bottom: 4px;
-        }
-        .label { color: #15a871; font-size: 1.07em; font-weight: 600; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="icon">🎉</div>
-        <h1>Parabéns, {{ usuario or "seu acesso premium foi liberado" }}!</h1>
-        <p>
-          <b>Agora você tem acesso à Avaliação Premium completa.</b><br>
-          Você receberá seu relatório exclusivo no e-mail cadastrado.<br>
-          Seu investimento ajuda a promover <b>competências profissionais, desenvolvimento social e impacto ambiental positivo!</b>
-        </p>
-        <div class="loader"></div>
-        <div class="small">Você será redirecionado em instantes...</div>
-        <div class="bonus">
-            <b>Bônus Exclusivo:</b> Ao final da avaliação, acesse um conteúdo especial sobre <b>sustentabilidade e liderança com propósito</b> no ambiente de trabalho!
-        </div>
-        <div class="social">
-            <span class="label">Siga e indique nas redes sociais:</span>
-            <span>
-                <a href="https://www.instagram.com/faca.bem?igsh=MTY0aXE3Mjc5d2g3Zg%3D%3D&utm_source=qr" target="_blank">
-                    Instagram: @faca.bem
-                </a>
-            </span>
-            <div class="qr-container">
-                <img src="{{ url_for('static', filename='img/instagram_qr.png') }}" alt="Instagram QR Code">
-                <div class="small">Aponte a câmera para seguir rapidamente!</div>
-            </div>
-            <span>
-                <a href="https://wa.me/5561998228700" target="_blank">
-                    WhatsApp: (61) 99822-8700
-                </a>
-            </span>
-            <span>
-                Dúvidas ou sugestões? <a href="mailto:consultoria@openmanagement.com.br">Fale com nosso suporte</a>
-            </span>
-            <span>
-                <b>Compartilhe:</b> indique para um amigo e colabore com nosso impacto social!
-            </span>
-        </div>
+        <div class="icon">✅</div>
+        <h1>Pagamento Aprovado!</h1>
+        <p>Sua avaliação premium foi liberada com sucesso. Você já pode acessar todo o conteúdo exclusivo.</p>
+        <a href="/" class="button">Voltar para a página inicial</a>
     </div>
 </body>
 </html>
+
