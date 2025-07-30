@@ -430,7 +430,7 @@ def checkout():
             logger.info(f"Preferência criada: {preference['id']}")
             return redirect(preference["init_point"])
         else:
-            logger.error(f"Erro ao criar preferência: {preference_response["response"]}")
+            logger.error(f"Erro ao criar preferência: {preference_response['response']}")
             return jsonify({"error": "Erro ao criar preferência de pagamento"}), 500
 
     except Exception as e:
