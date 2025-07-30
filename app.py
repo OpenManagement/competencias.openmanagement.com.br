@@ -297,39 +297,34 @@ Equipe Método Faça Bem
 consultoria@openmanagement.com.br"""
 
 def enviar_email(nome, email_destino, pdf_path, pontuacao_geral):
-    """Envia email com relatório em anexo usando configurações SMTP Zoho"""
+    """Envia email com relatório em anexo usando configurações SMTP Zoho (VERSÃO CORRIGIDA)"""
     try:
         # Configurações do SMTP Zoho Mail - Exatamente conforme especificado
         smtp_server = os.getenv("MAIL_SERVER")
-        smtp_port = int(os.getenv("MAIL_PORT", 465))  # Default: 465
+        smtp_port = int(os.getenv("MAIL_PORT", 465))
         email_usuario = os.getenv("MAIL_USERNAME")
         email_senha = os.getenv("MAIL_PASSWORD")
         email_interno = os.getenv("MAIL_USERNAME")
-        
+
         # Verificar se o arquivo PDF existe antes de prosseguir
         if not pdf_path or not os.path.exists(pdf_path):
-            import datetime
-            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            logger.error(f"[{timestamp}] Arquivo PDF não encontrado: {pdf_path}")
+            logger.error(f"Arquivo PDF não encontrado ao tentar enviar e-mail: {pdf_path}")
             return False
-        
+
         # Criar mensagem
         msg = MIMEMultipart()
-        msg['From'] = email_usuario
+        msg['From'] = f"Método Faça Bem <{email_usuario}>"
         msg['To'] = f"{email_destino},{email_interno}"
         msg['Subject'] = "[Método Faça Bem] Seu Relatório de Competências (PDF)"
-        
+
         # Corpo do email conforme especificado
         corpo_html = f"""
         <html>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
             <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
                 <h2 style="color: #4CAF50;">Olá {nome}!</h2>
-                
                 <p>Parabéns por completar sua autoavaliação de competências! 🎉</p>
-                
                 <p><strong>Sua pontuação geral foi: {pontuacao_geral:.2f}/5.00</strong></p>
-                
                 <p>Em anexo, você encontrará seu relatório personalizado em PDF com:</p>
                 <ul>
                     <li>✅ Análise detalhada de suas competências</li>
@@ -337,74 +332,59 @@ def enviar_email(nome, email_destino, pdf_path, pontuacao_geral):
                     <li>✅ Ranking de pontos fortes e oportunidades</li>
                     <li>✅ Plano de desenvolvimento personalizado</li>
                 </ul>
-                
-                <p>Este relatório foi desenvolvido especialmente para você com base em suas respostas na escala Likert. Use-o como guia para acelerar seu desenvolvimento pessoal e profissional.</p>
-                
+                <p>Este relatório foi desenvolvido especialmente para você. Use-o como guia para acelerar seu desenvolvimento pessoal e profissional.</p>
                 <p><strong>Sucesso em sua jornada de desenvolvimento!</strong></p>
-                
                 <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
                 <p style="color: #666; font-size: 14px;">
-                    <strong>Equipe Método Faça Bem</strong><br>
-                    consultoria@openmanagement.com.br
+                    <strong>Equipe Método Faça Bem</strong>  
+
+                    {email_usuario}
                 </p>
             </div>
         </body>
         </html>
         """
-        
-        # Versão texto simples conforme especificado
-        corpo_texto = f"""Olá {nome}!
-
-Parabéns por completar sua autoavaliação de competências! 🎉
-
-Sua pontuação geral foi: {pontuacao_geral:.2f}/5.00
-
-Em anexo, você encontrará seu relatório personalizado em PDF com:
-✅ Análise detalhada de suas competências  
-✅ Gráficos visuais dos resultados  
-✅ Ranking de pontos fortes e oportunidades  
-✅ Plano de desenvolvimento personalizado  
-
-Este relatório foi desenvolvido especialmente para você com base em suas respostas na escala Likert. Use-o como guia para acelerar seu desenvolvimento pessoal e profissional.
-
-Sucesso em sua jornada de desenvolvimento!
-
-Equipe Método Faça Bem  
-consultoria@openmanagement.com.br"""
-        
-        # Anexar corpo do email
-        msg.attach(MIMEText(corpo_texto, 'plain', 'utf-8'))
         msg.attach(MIMEText(corpo_html, 'html', 'utf-8'))
-        
-        # Anexar PDF usando MIMEBase conforme especificado
+
+        # Anexar PDF
         with open(pdf_path, "rb") as attachment:
             part = MIMEBase('application', 'octet-stream')
             part.set_payload(attachment.read())
-            encoders.encode_base64(part)
-            part.add_header(
-                'Content-Disposition',
-                f'attachment; filename="Relatorio_Competencias_{nome.replace(" ", "_")}.pdf"'
-            )
-            msg.attach(part)
+        encoders.encode_base64(part)
+        part.add_header(
+            'Content-Disposition',
+            f'attachment; filename="Relatorio_Competencias_{nome.replace(" ", "_")}.pdf"'
+        )
+        msg.attach(part)
+
+        # --- INÍCIO DA CORREÇÃO ---
+        # Conexão segura e envio do e-mail usando o método moderno e seguro
         
-        # Enviar email usando SSL/TLS conforme especificado
-        server = smtplib.SMTP_SSL(smtp_server, smtp_port)
-        server.login(email_usuario, email_senha)
-        text = msg.as_string()
-        server.sendmail(email_usuario, [email_destino, email_interno], text)
-        server.quit()
+        # 1. Criar um contexto SSL seguro padrão.
+        context = smtplib.ssl.create_default_context()
         
-        # Log de sucesso conforme especificado
-        import datetime
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        logger.info(f"[{timestamp}] E-mail enviado para: {email_destino}, {email_interno}")
+        # 2. Usar o 'with' para garantir que a conexão seja fechada automaticamente
+        #    e passar o contexto de segurança.
+        with smtplib.SMTP_SSL(smtp_server, smtp_port, context=context) as server:
+            logger.info(f"Conectado ao servidor SMTP: {smtp_server}")
+            
+            # 3. Fazer login
+            server.login(email_usuario, email_senha)
+            logger.info("Login SMTP bem-sucedido.")
+            
+            # 4. Enviar o e-mail
+            server.send_message(msg)
+            logger.info(f"E-mail enviado com sucesso para: {email_destino} (cópia para: {email_interno})")
+        
+        # --- FIM DA CORREÇÃO ---
+        
         return True
-        
+
+    except smtplib.SMTPAuthenticationError as e:
+        logger.error(f"ERRO DE AUTENTICAÇÃO SMTP: {e}. Verifique usuário/senha e se a 'senha de aplicativo' é necessária.")
+        return False
     except Exception as e:
-        # Log de erro conforme especificado
-        import datetime
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        logger.error(f"[{timestamp}] Erro ao enviar email: {e}")
+        logger.error(f"Erro geral ao enviar email: {e}", exc_info=True)
         return False
 
 @app.route('/')
