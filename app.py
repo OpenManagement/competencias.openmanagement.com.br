@@ -411,11 +411,12 @@ def checkout():
                     "currency_id": "BRL"
                 }
             ],
-            "back_urls": {
-                "success": request.url_root + "pagamento_sucesso",
-                "failure": request.url_root + "pagamento_falha",
-                "pending": request.url_root + "pagamento_pendente"
+            'back_urls': {
+                'success': 'http://web-production-a302.up.railway.app/pagamento_sucesso',
+                'failure': 'http://web-production-a302.up.railway.app/pagamento_falha',
+                'pending': 'http://web-production-a302.up.railway.app/pagamento_pendente',
             },
+
             "auto_return": "approved",
             "external_reference": f"premium_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         }
