@@ -9,6 +9,8 @@ from email import encoders
 import pdfkit
 import os
 
+smtplib.SMTP.debuglevel = 1   # <-- Coloque aqui!
+
 # Carregar variáveis de ambiente do arquivo .env
 try:
     from dotenv import load_dotenv
@@ -358,24 +360,21 @@ def enviar_email(nome, email_destino, pdf_path, pontuacao_geral):
         msg.attach(part)
 
         # --- INÍCIO DA CORREÇÃO ---
-        # Conexão segura e envio do e-mail usando o método moderno e seguro
-        
-        # 1. Criar um contexto SSL seguro padrão.
-        context = smtplib.ssl.create_default_context()
-        
-        # 2. Usar o 'with' para garantir que a conexão seja fechada automaticamente
-        #    e passar o contexto de segurança.
-        with smtplib.SMTP_SSL(smtp_server, smtp_port, context=context) as server:
-            logger.info(f"Conectado ao servidor SMTP: {smtp_server}")
-            
-            # 3. Fazer login
-            server.login(email_usuario, email_senha)
-            logger.info("Login SMTP bem-sucedido.")
-            
-            # 4. Enviar o e-mail
-            server.send_message(msg)
-            logger.info(f"E-mail enviado com sucesso para: {email_destino} (cópia para: {email_interno})")
-        
+        # Se for porta 465, use SSL. Se não, use STARTTLS.
+        if smtp_port == 465:
+            with smtplib.SMTP_SSL(smtp_server, smtp_port) as server:
+                logger.info(f"Conectado ao servidor SMTP (SSL): {smtp_server}")
+                server.login(email_usuario, email_senha)
+                server.send_message(msg)
+                logger.info(f"E-mail enviado com sucesso para: {email_destino} (cópia para: {email_interno})")
+        else:
+            with smtplib.SMTP(smtp_server, smtp_port) as server:
+                logger.info(f"Conectado ao servidor SMTP (STARTTLS): {smtp_server}")
+                server.ehlo()
+                server.starttls()
+                server.login(email_usuario, email_senha)
+                server.send_message(msg)
+                logger.info(f"E-mail enviado com sucesso para: {email_destino} (cópia para: {email_interno})")
         # --- FIM DA CORREÇÃO ---
         
         return True
