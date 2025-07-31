@@ -308,11 +308,11 @@ def enviar_email(nome, email_destino, pdf_path, pontuacao_geral):
         email_usuario = os.getenv("MAIL_USERNAME")
         email_senha = os.getenv("MAIL_PASSWORD")
         email_interno = os.getenv("MAIL_USERNAME")
-
-        print(f"MAIL_SERVER: '{smtp_server}'")
-        print(f"MAIL_PORT: '{smtp_port}'")
-        print(f"MAIL_USERNAME: '{email_usuario}'")
-        print(f"MAIL_PASSWORD: '{email_senha}'")
+ 
+        logger.info(f"MAIL_SERVER: '{smtp_server}'")
+        logger.info(f"MAIL_PORT: '{smtp_port}'")
+        logger.info(f"MAIL_USERNAME: '{email_usuario}'")
+        logger.info(f"MAIL_PASSWORD: '{email_senha}'")
 
         # Verificar se o arquivo PDF existe antes de prosseguir
         if not pdf_path or not os.path.exists(pdf_path):
