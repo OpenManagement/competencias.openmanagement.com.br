@@ -7,7 +7,7 @@
 ### **2. Encontre estas linhas (por volta da linha 66-67):**
 ```python
 EMAIL_USER = 'consultoria@openmanagement.com.br'  # ALTERE AQUI para seu e-mail
-EMAIL_PASS = 'sua_senha_de_app_aqui'  # ALTERE AQUI para sua senha de app
+EMAIL_PASS = 'wRY3F3Cv4p3M'  # ALTERE AQUI para sua senha de app
 ```
 
 ### **3. Substitua pelos seus dados:**
