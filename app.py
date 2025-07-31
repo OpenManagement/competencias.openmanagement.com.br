@@ -32,6 +32,19 @@ from database import init_database, save_transaction, get_transaction_by_payment
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
 
+from flask import request, jsonify
+
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    # Pega os dados recebidos do Mercado Pago
+    data = request.json
+    print("Recebido Webhook Mercado Pago:", data)
+    # Aqui você pode adicionar o tratamento necessário, como atualizar o status do pagamento
+    # Exemplo: salvar num log, atualizar banco, liberar acesso, etc.
+
+    # Sempre retorne 200 para indicar recebimento OK ao Mercado Pago
+    return jsonify({'status': 'received'}), 200
+
 # Configuração do Mercado Pago via variáveis de ambiente
 mp = mercadopago.SDK(os.getenv("MP_ACCESS_TOKEN"))
 PUBLIC_KEY = os.getenv("MP_PUBLIC_KEY")
@@ -40,7 +53,6 @@ CLIENT_SECRET = os.getenv("MP_CLIENT_SECRET")
 
 # Inicializar banco de dados
 init_database()
-
 
 # Configuração de logging
 logging.basicConfig(
