@@ -314,12 +314,11 @@ def enviar_email(nome, email_destino, pdf_path, pontuacao_geral):
     """Envia email com relatório em anexo usando configurações SMTP Zoho (VERSÃO CORRIGIDA)"""
     try:
         # Configurações do SMTP Zoho Mail - Exatamente conforme especificado
-        smtp_server = os.getenv("MAIL_SERVER"
-                               )
-        smtp_port = int(os.getenv("MAIL_PORT", 465)
+        smtp_server = os.getenv("MAIL_SERVER")
+        smtp_port   = int(os.getenv("MAIL_PORT", 465))
         email_usuario = os.getenv("MAIL_USERNAME")
-        email_senha = os.getenv("MAIL_PASSWORD")
-        email_interno = os.getenv("MAIL_USERNAME")
+        email_senha   = os.getenv("MAIL_PASSWORD")
+        email_interno = email_usuario
  
         logger.info(f"MAIL_SERVER: '{smtp_server}'")
         logger.info(f"MAIL_PORT: '{smtp_port}'")
