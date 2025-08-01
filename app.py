@@ -314,9 +314,8 @@ def enviar_email(nome, email_destino, pdf_path, pontuacao_geral):
     """Envia email com relatório em anexo usando configurações SMTP Zoho (VERSÃO CORRIGIDA)"""
     try:
         # Configurações do SMTP Zoho Mail - Exatamente conforme especificado
-        smtp_server = os.getenv("MAIL_SERVER"
-                                   )
-        smtp_port = int(os.getenv("MAIL_PORT", 465))
+        smtp_server = os.getenv("MAIL_SERVER")
+        smtp_port = int(os.getenv("MAIL_PORT", 465)
         email_usuario = os.getenv("MAIL_USERNAME")
         email_senha = os.getenv("MAIL_PASSWORD")
         email_interno = os.getenv("MAIL_USERNAME")
@@ -364,7 +363,10 @@ def enviar_email(nome, email_destino, pdf_path, pontuacao_geral):
         </body>
         </html>
         """
-        msg.attach(MIMEText(corpo_html, 'html', 'utf-8'))
+        # --- Ajuste de encoding UTF-8 para evitar erros com acentos ---
+        html_part = MIMEText(corpo_html, 'html', 'utf-8')
+        html_part.replace_header('Content-Type', 'text/html; charset="utf-8"')
+        msg.attach(html_part)
 
         # Anexar PDF
         with open(pdf_path, "rb") as attachment:
